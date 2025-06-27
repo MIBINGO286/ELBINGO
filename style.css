@@ -95,7 +95,7 @@ button:hover{background:#ff0000}
 .close{
   float:right;
   font-size:1.4rem;
-  cursor:pointer;
-}.hidden {
+  cursor:pointer;}
+  .hidden {
   display: none !important;
 }
