@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BINGO JOKER</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <img src="logo.png" alt="Bingo Joker Logo" class="logo">
+  <h1>BINGO JOKER</h1>
+</header>
+
+<section id="loginPanel">
+  <input type="password" id="claveAdmin" placeholder="Contraseña de admin">
+  <button id="desbloquearPanel">Desbloquear Panel de Control</button>
+</section>
+
+<section id="panel-admin" class="hidden">
+  <h2>Panel de Control</h2>
+  <button id="iniciarSorteo">Sacar número automáticamente</button>
+  <button id="detenerSorteo">Detener sorteo</button>
+  <button id="reiniciarPartida">Reiniciar partida</button>
+  <button id="liberarTodos">Quitar todos los cartones vendidos</button>
+</section>
+
+<section id="numeroActual">
+  <span id="letraNumero"></span>
+  <span id="valorNumero"></span>
+</section>
+
+<section id="buscador">
+  <input type="text" id="buscarCarton" placeholder="Buscar cartón (#001 - #1000)">
+</section>
+
+<section id="cartones"></section>
+
+<!-- Modal de compra -->
+<div id="modalCompra" class="modal hidden">
+  <div class="modal-content">
+    <span id="closeModal" class="close">&times;</span>
+    <h2>Reservar Cartón <span id="cartonSeleccionado"></span></h2>
+    <input type="text" id="nombre" placeholder="Nombre">
+    <input type="text" id="apellido" placeholder="Apellido">
+    <input type="text" id="telefono" placeholder="Teléfono">
+    <button id="btnReservar">Reservar</button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
