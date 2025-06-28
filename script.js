@@ -1,1 +1,0 @@
-// Aquí irá la lógica del sorteo, reservas y verificación.
