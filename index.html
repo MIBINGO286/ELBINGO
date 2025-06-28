@@ -1,0 +1,22 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>BINGO JOKER</title><link rel="stylesheet" href="style.css"></head><body>
+<header><img src="logo.png" class="logo" alt="Logo Bingo Joker"><h1>BINGO JOKER</h1></header>
+<section id="loginPanel"><input id="claveAdmin" type="password" placeholder="Contraseña de admin">
+<button id="desbloquearPanel">Desbloquear Panel de Control</button></section>
+<section id="panel-admin" class="hidden"><h2>Panel de Control</h2>
+<div class="btn-group"><button id="iniciarSorteo">Sacar número automáticamente</button>
+<button id="detenerSorteo">Detener sorteo</button><button id="reiniciarPartida">Reiniciar partida</button>
+<button id="liberarTodos">Liberar todos los cartones</button></div><h3>Modo de Juego</h3>
+<div class="btn-group"><button id="modoVertical" class="mode">Vertical</button>
+<button id="modoHorizontal" class="mode">Horizontal</button><button id="modoDiagonal" class="mode">Diagonal</button>
+<button id="modoCartonLleno" class="mode">Cartón lleno</button></div></section>
+<section id="numeroActual"><span id="letraNumero"></span><span id="valorNumero"></span></section>
+<section id="listaCantados"><h3>Números cantados</h3><div id="cantados"></div></section>
+<section id="buscador"><input id="buscarCarton" placeholder="Buscar cartón (#001-#1000)"></section>
+<section id="cartones"></section>
+<div id="modalCompra" class="modal hidden"><div class="modal-content">
+<span id="closeModal" class="close">&times;</span><h2>Reservar Cartón <span id="cartonSeleccionado"></span></h2>
+<input id="nombre" placeholder="Nombre"><input id="apellido" placeholder="Apellido">
+<input id="telefono" placeholder="Teléfono"><button id="btnReservar">Reservar</button></div></div>
+<script src="script.js"></script></body></html>
