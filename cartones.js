@@ -1,1 +1,0 @@
-const cartones = []; // Simulación de 1000 cartones preestablecidos
