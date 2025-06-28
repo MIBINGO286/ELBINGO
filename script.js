@@ -1,1 +1,0 @@
-// script.js: Contiene lógica de sorteo, voz, reservas, detección de ganador
