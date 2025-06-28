@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BINGO JOKER</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>🎉 BINGO JOKER 🎱</h1>
+  <div id="panel-control">
+    <input type="password" id="clave" placeholder="Clave panel" />
+    <button onclick="desbloquearPanel()">🔓 Desbloquear Panel</button>
+  </div>
+  <div id="controles" style="display:none">
+    <button onclick="iniciarPartida()">🎲 Iniciar Sorteo</button>
+    <button onclick="detenerPartida()">✋ Detener</button>
+    <button onclick="reiniciarPartida()">🔁 Reiniciar</button>
+    <select id="modo">
+      <option value="horizontal">Horizontal</option>
+      <option value="vertical">Vertical</option>
+      <option value="diagonal">Diagonal</option>
+      <option value="lleno">Cartón lleno</option>
+    </select>
+  </div>
+
+  <div id="cartones-container"></div>
+  <div id="ganador-modal" class="modal">
+    <div class="modal-content" id="contenido-ganador"></div>
+  </div>
+
+  <script src="cartones.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
