@@ -10,7 +10,7 @@
   <header>
     <h1>BINGO JOKER 🎠</h1>
     <input type="text" id="searchInput" placeholder="Buscar cartón #001 - #1000" />
-    <a href="admin.html" class="admin-link">Panel de control</a>
+    <button id="openAdminBtn" class="admin-link">Panel de control</button>
   </header>
 
   <section id="gameInfo">
@@ -26,6 +26,44 @@
   <footer>
     <p>&copy; 2025 BINGO JOKER</p>
   </footer>
+
+  <div id="adminModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" id="closeAdminBtn">&times;</span>
+      <div id="loginGate">
+        <h2>Panel de control</h2>
+        <input type="password" id="passInput" placeholder="Contraseña" />
+        <button id="loginBtn">Entrar</button>
+        <p id="loginMsg"></p>
+      </div>
+
+      <div id="adminPanel" style="display:none;">
+        <h2>Administrador Bingo Joker</h2>
+        <section class="admin-section">
+          <button id="startBtn">Iniciar sorteo</button>
+          <button id="pauseBtn">Pausar</button>
+          <button id="resetBtn">Reiniciar partida</button>
+        </section>
+
+        <section class="admin-section">
+          <h3>Modalidades activas</h3>
+          <label><input type="checkbox" id="chkLinea" checked> Línea</label>
+          <label><input type="checkbox" id="chkColumna" checked> Columna</label>
+          <label><input type="checkbox" id="chkFull" checked> Cartón lleno</label>
+        </section>
+
+        <section class="admin-section">
+          <h3>Cartones vendidos (<span id="soldCartonsCount">0</span>)</h3>
+          <div id="salesList"></div>
+        </section>
+
+        <section class="admin-section">
+          <h3>Ganadores</h3>
+          <div id="winnersList"></div>
+        </section>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="script.js"></script>
 </body>
