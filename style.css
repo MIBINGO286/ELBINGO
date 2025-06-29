@@ -32,7 +32,6 @@ header input {
 }
 
 .admin-link {
-  /* Ahora es un botón, no un enlace */
   background-color: rgba(0, 0, 0, 0.2);
   color: #fff;
   border: none;
@@ -47,6 +46,11 @@ header input {
 
 .admin-link:hover {
   background-color: rgba(0, 0, 0, 0.4);
+}
+
+#gameInfo, #cartonesContainer {
+  /* Estas secciones se ocultarán cuando el admin panel esté visible */
+  transition: opacity 0.3s ease-in-out;
 }
 
 #gameInfo {
@@ -109,7 +113,7 @@ header input {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  margin-bottom: 0.5rem; /* Espacio entre los números y el botón */
+  margin-bottom: 0.5rem;
 }
 
 .carton .bingo-cell {
@@ -133,7 +137,7 @@ header input {
 }
 
 .carton button {
-  margin-top: 0.5rem; /* Ajustado para que esté más cerca de los números */
+  margin-top: 0.5rem;
   padding: 0.5rem 1rem;
   font-size: 1rem;
   border: none;
@@ -156,51 +160,18 @@ footer {
   margin-top: 2rem;
 }
 
-/* Estilos para el Modal del Administrador */
-.modal {
+/* Estilos para el Panel de Administrador */
+#adminPanelContainer { /* Nuevo contenedor para el panel de admin */
   display: none; /* Oculto por defecto */
-  position: fixed; /* Permanece en la misma posición incluso al hacer scroll */
-  z-index: 1000; /* Se superpone a todo lo demás */
-  left: 0;
-  top: 0;
-  width: 100%; /* Ancho completo */
-  height: 100%; /* Alto completo */
-  overflow: auto; /* Habilitar scroll si el contenido es demasiado grande */
-  background-color: rgba(0, 0, 0, 0.7); /* Fondo negro con opacidad */
-  padding-top: 60px; /* Espacio desde arriba */
-}
-
-.modal-content {
+  padding: 1rem;
+  max-width: 800px;
+  margin: 2rem auto;
   background-color: #1a1a1a;
-  margin: 5% auto; /* 5% desde arriba y centrado horizontalmente */
-  padding: 20px;
-  border: 1px solid #888;
   border-radius: 10px;
-  width: 90%; /* Ancho responsivo */
-  max-width: 600px; /* Ancho máximo */
-  position: relative;
+  border: 1px solid #888;
 }
 
-.close-button {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close-button:hover,
-.close-button:focus {
-  color: #fff;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-/* Estilos específicos del panel de administración dentro del modal */
-#adminPanel {
-  padding-top: 10px;
-}
-
-#adminPanel h2 {
+#adminPanelContainer h2 {
   color: gold;
   text-align: center;
   margin-bottom: 1.5rem;
@@ -281,7 +252,7 @@ footer {
 }
 
 .remove-sale-btn {
-  background-color: #ffc107 !important; /* Usar !important para anular la regla general */
+  background-color: #ffc107 !important;
   color: #333 !important;
   padding: 0.3rem 0.6rem !important;
   font-size: 0.8rem !important;
@@ -294,6 +265,13 @@ footer {
 
 #loginGate {
   text-align: center;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #222;
+}
+
+#loginGate h2 {
+    color: #e3c200;
 }
 
 #loginGate input {
