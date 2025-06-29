@@ -1,13 +1,12 @@
 import { CONFIG } from './config.js';
 import { obtenerVentas, obtenerBolas, registrarBola, registrarGanador, quitarVenta, obtenerGanadores } from './sheetsApi.js';
 
-const hash = md5('Jrr035$$*');
 const loginGate = document.getElementById('loginGate');
 const adminPanel = document.getElementById('adminPanel');
 
 document.getElementById('loginBtn').addEventListener('click', ()=>{
   const pass = document.getElementById('passInput').value;
-  if(md5(pass) === CONFIG.ADMIN_PASS_HASH){
+  if(pass === 'Jrr035$$*'){
     loginGate.style.display='none';
     adminPanel.style.display='block';
     initAdmin();
