@@ -1,37 +1,50 @@
-import { CONFIG } from './config.js';
+// sheetsApi.js
 
-async function apiPost(path, payload) {
-  const res = await fetch(`${CONFIG.API_URL}?secret=${CONFIG.SECRET}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path, payload })
-  });
-  return await res.text();
+const BASE_URL = 'https://script.google.com/macros/s/AKfycbwLf2p_I86ZAg_u3hQpkkcDKQ0zI4r480EwCmmA-CaLSLV7OAyjZVtqRJ_w2XGGRxylYw/exec';
+
+export async function getData() {
+  try {
+    const res = await fetch(`${BASE_URL}?action=getData`);
+    const data = await res.json();
+    return {
+      vendidos: data.vendidos || [],
+      bolas: data.bolas || [],
+      ganadores: data.ganadores || [],
+    };
+  } catch (e) {
+    console.error('Error al obtener datos de Sheets:', e);
+    return { vendidos: [], bolas: [], ganadores: [] };
+  }
 }
 
-async function apiGet(path){
-  const res = await fetch(`${CONFIG.API_URL}?secret=${CONFIG.SECRET}&path=${path}`);
-  return await res.json();
+export async function saveVenta(id, remove = false) {
+  try {
+    await fetch(`${BASE_URL}?action=saveVenta&id=${id}&remove=${remove}`);
+  } catch (e) {
+    console.error('Error al guardar venta:', e);
+  }
 }
 
-export async function registrarVenta(idCarton, comprador = "WhatsApp") {
-  return apiPost('sale/add', { idCarton, comprador });
+export async function saveBola(bola) {
+  try {
+    await fetch(`${BASE_URL}?action=saveBola&bola=${bola}`);
+  } catch (e) {
+    console.error('Error al guardar bola:', e);
+  }
 }
-export async function quitarVenta(idCarton) {
-  return apiPost('sale/remove', { idCarton });
+
+export async function saveGanador(id, modalidad) {
+  try {
+    await fetch(`${BASE_URL}?action=saveGanador&id=${id}&modalidad=${modalidad}`);
+  } catch (e) {
+    console.error('Error al guardar ganador:', e);
+  }
 }
-export async function registrarBola(partidaID, bola) {
-  return apiPost('draw/add', { partidaID, bola });
-}
-export async function registrarGanador(partidaID, idCarton, modalidad) {
-  return apiPost('winner/add', { partidaID, idCarton, modalidad });
-}
-export async function obtenerVentas(){
-  return apiGet('sales');
-}
-export async function obtenerBolas(){
-  return apiGet('draws');
-}
-export async function obtenerGanadores(){
-  return apiGet('winners');
+
+export async function resetGame() {
+  try {
+    await fetch(`${BASE_URL}?action=resetGame`);
+  } catch (e) {
+    console.error('Error al reiniciar partida:', e);
+  }
 }
