@@ -1,155 +1,176 @@
-import { CONFIG } from './config.js';
-import { obtenerVentas, obtenerBolas, registrarBola, registrarGanador, quitarVenta, obtenerGanadores } from './sheetsApi.js';
+// admin.js
+import { getData, saveBola, saveGanador, saveVenta, resetGame } from './sheetsApi.js';
 
 const loginGate = document.getElementById('loginGate');
 const adminPanel = document.getElementById('adminPanel');
+const passInput = document.getElementById('passInput');
+const loginBtn = document.getElementById('loginBtn');
+const loginMsg = document.getElementById('loginMsg');
 
-document.getElementById('loginBtn').addEventListener('click', ()=>{
-  const pass = document.getElementById('passInput').value;
-  if(pass === 'Jrr035$$*'){
-    loginGate.style.display='none';
-    adminPanel.style.display='block';
+const startBtn = document.getElementById('startBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const resetBtn = document.getElementById('resetBtn');
+
+const chkLinea = document.getElementById('chkLinea');
+const chkColumna = document.getElementById('chkColumna');
+const chkFull = document.getElementById('chkFull');
+
+const salesList = document.getElementById('salesList');
+const winnersList = document.getElementById('winnersList');
+
+const PASSWORD = 'Jrr035$$*';
+
+let bolas = [];
+let vendidos = new Set();
+let ganadores = [];
+let cartones = [];
+let intervalId = null;
+let currentIndex = 0;
+
+loginBtn.addEventListener('click', () => {
+  if (passInput.value === PASSWORD) {
+    loginGate.style.display = 'none';
+    adminPanel.style.display = 'block';
     initAdmin();
   } else {
-    document.getElementById('loginMsg').innerText='Contraseña incorrecta';
+    loginMsg.textContent = 'Contraseña incorrecta';
+    loginMsg.style.color = 'red';
   }
 });
 
-/* === Sorteo de bolas === */
-let remainingNumbers = [...Array(75).keys()].map(n=>n+1);
-let drawInterval = null;
-let partidaID = Date.now().toString();
+async function initAdmin() {
+  const data = await getData();
+  bolas = data.bolas;
+  vendidos = new Set(data.vendidos);
+  ganadores = data.ganadores || [];
+  const res = await fetch('./cartones.json');
+  cartones = await res.json();
+  renderVentas();
+  renderGanadores();
+  currentIndex = bolas.length;
+  updateModalidadesUI();
+}
 
-async function drawNext(){
-  if(remainingNumbers.length===0){
-    clearInterval(drawInterval);
+function renderVentas() {
+  salesList.innerHTML = '';
+  vendidos.forEach(id => {
+    const div = document.createElement('div');
+    div.textContent = `Cartón #${id}`;
+    const btn = document.createElement('button');
+    btn.textContent = 'Quitar';
+    btn.addEventListener('click', async () => {
+      vendidos.delete(id);
+      await saveVenta(id, true); // true means remove
+      renderVentas();
+    });
+    div.appendChild(btn);
+    salesList.appendChild(div);
+  });
+}
+
+function renderGanadores() {
+  winnersList.innerHTML = '';
+  ganadores.forEach(({ id, modalidad }) => {
+    const div = document.createElement('div');
+    div.textContent = `Cartón #${id} - Ganador: ${modalidad}`;
+    winnersList.appendChild(div);
+  });
+}
+
+function updateModalidadesUI() {
+  chkLinea.checked = true;
+  chkColumna.checked = true;
+  chkFull.checked = true;
+}
+
+startBtn.addEventListener('click', () => {
+  if (intervalId) return;
+  intervalId = setInterval(extraerBola, 5000);
+});
+
+pauseBtn.addEventListener('click', () => {
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
+});
+
+resetBtn.addEventListener('click', async () => {
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
+  await resetGame();
+  bolas = [];
+  ganadores = [];
+  currentIndex = 0;
+  renderGanadores();
+  renderVentas();
+  alert('Partida reiniciada');
+});
+
+async function extraerBola() {
+  if (currentIndex >= 75) {
+    clearInterval(intervalId);
+    intervalId = null;
+    alert('Se han extraído todas las bolas.');
     return;
   }
-  const idx = Math.floor(Math.random()*remainingNumbers.length);
-  const ball = remainingNumbers.splice(idx,1)[0];
-  await registrarBola(partidaID, ball);
-  actualizarUI();
-  evaluarGanadores(ball);
-  reproducirSonido('ball');
+  let bolaNueva;
+  do {
+    bolaNueva = Math.floor(Math.random() * 75) + 1;
+  } while (bolas.includes(bolaNueva));
+  bolas.push(bolaNueva);
+  currentIndex++;
+  await saveBola(bolaNueva);
+  checkGanadores();
+  renderGanadores();
+  renderVentas();
 }
 
-function startDraw(){
-  if(!drawInterval){
-    drawInterval = setInterval(drawNext, 5000);
-    drawNext(); // saca la primera de inmediato
-  }
-}
-function pauseDraw(){
-  clearInterval(drawInterval);
-  drawInterval = null;
-}
-function resetGame(){
-  pauseDraw();
-  remainingNumbers = [...Array(75).keys()].map(n=>n+1);
-  partidaID = Date.now().toString();
-  alert('Nueva partida iniciada');
-}
-
-document.getElementById('startBtn').addEventListener('click', startDraw);
-document.getElementById('pauseBtn').addEventListener('click', pauseDraw);
-document.getElementById('resetBtn').addEventListener('click', resetGame);
-
-/* === Modalidades === */
-function getActiveModes(){
-  return {
-    linea: document.getElementById('chkLinea').checked,
-    columna: document.getElementById('chkColumna').checked,
-    full: document.getElementById('chkFull').checked
+function checkGanadores() {
+  const modalidades = {
+    linea: chkLinea.checked,
+    columna: chkColumna.checked,
+    full: chkFull.checked,
   };
-}
-
-/* === Ventas === */
-async function cargarVentas(){
-  const ventas = await obtenerVentas();
-  const list = document.getElementById('salesList');
-  list.innerHTML='';
-  ventas.slice(1).forEach(v=>{
-    const div = document.createElement('div');
-    div.innerHTML = `Cartón #${v[0]} - ${v[3]} <button data-id="${v[0]}">Quitar</button>`;
-    list.appendChild(div);
-  });
-  list.querySelectorAll('button').forEach(btn=>{
-    btn.onclick=async ()=>{
-      await quitarVenta(btn.dataset.id);
-      cargarVentas();
-    };
-  });
-}
-
-/* === Ganadores === */
-async function cargarGanadores(){
-  const gan = await obtenerGanadores();
-  const list = document.getElementById('winnersList');
-  list.innerHTML='';
-  gan.slice(1).forEach(w=>{
-    const div = document.createElement('div');
-    div.textContent = `Cartón #${w[1]} ganó por ${w[2]}`;
-    list.appendChild(div);
-  });
-}
-
-async function actualizarUI(){
-  await cargarVentas();
-  await cargarGanadores();
-}
-
-async function initAdmin(){
-  await actualizarUI();
-}
-
-/* === Evaluación de ganadores (simple) === */
-import cartonesData from './cartones.json' assert {type:'json'};
-async function evaluarGanadores(ball){
-  const mods = getActiveModes();
-  const ventas = await obtenerVentas();
-  const vendidos = ventas.slice(1).map(r=>r[0]);
-  const draws = await obtenerBolas();
-  const bolas = draws.slice(1).map(r=>r[1]).map(Number);
-  vendidos.forEach(id=>{
-    const carton = cartonesData.find(c=>c.id===id.padStart(3,'0'));
-    if(!carton) return;
-    if(mods.full && isFull(carton, bolas)){
-      registrarGanador(partidaID, id, 'Full');
-      reproducirSonido('win');
-    } else if(mods.linea && isLinea(carton, bolas)){
-      registrarGanador(partidaID, id, 'Línea');
-      reproducirSonido('win');
-    } else if(mods.columna && isColumna(carton, bolas)){
-      registrarGanador(partidaID, id, 'Columna');
-      reproducirSonido('win');
+  cartones.forEach(carton => {
+    if (!vendidos.has(carton.id)) return;
+    if (ganadores.find(g => g.id === carton.id)) return;
+    if (modalidades.linea && checkLinea(carton)) {
+      ganadores.push({ id: carton.id, modalidad: 'Línea' });
+      saveGanador(carton.id, 'Línea');
+    } else if (modalidades.columna && checkColumna(carton)) {
+      ganadores.push({ id: carton.id, modalidad: 'Columna' });
+      saveGanador(carton.id, 'Columna');
+    } else if (modalidades.full && checkFull(carton)) {
+      ganadores.push({ id: carton.id, modalidad: 'Cartón lleno' });
+      saveGanador(carton.id, 'Cartón lleno');
     }
   });
 }
 
-/* === Utilidades de chequeo === */
-function isMarked(num, bolas){ return num==='FREE' || bolas.includes(num); }
-function isLinea(carton, bolas){
-  return carton.rows.some(row => row.every(n=>isMarked(n, bolas)));
-}
-function isColumna(carton, bolas){
-  for(let c=0;c<5;c++){
-    let ok=true;
-    for(let r=0;r<5;r++){
-      if(!isMarked(carton.rows[r][c], bolas)){ ok=false; break; }
-    }
-    if(ok) return true;
+function checkLinea(carton) {
+  for (let r = 0; r < carton.matriz.length; r++) {
+    if (carton.matriz[r].every(n => bolas.includes(n))) return true;
   }
   return false;
 }
-function isFull(carton, bolas){
-  return carton.rows.flat().every(n=>isMarked(n, bolas));
+
+function checkColumna(carton) {
+  for (let c = 0; c < carton.matriz[0].length; c++) {
+    let colCompleta = true;
+    for (let r = 0; r < carton.matriz.length; r++) {
+      if (!bolas.includes(carton.matriz[r][c])) {
+        colCompleta = false;
+        break;
+      }
+    }
+    if (colCompleta) return true;
+  }
+  return false;
 }
 
-/* === Sonidos === */
-function reproducirSonido(tipo){
-  const audio = new Audio(tipo==='win' ? 'sounds/win.mp3' : 'sounds/ball.mp3');
-  audio.play().catch(()=>{});
+function checkFull(carton) {
+  return carton.matriz.flat().every(n => bolas.includes(n));
 }
-
-/* === MD5 simple (función ligera) === */
-function md5(str){return CryptoJS.MD5(str).toString();}
