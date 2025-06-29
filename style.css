@@ -1,78 +1,87 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background: radial-gradient(circle at center, #111, #000);
+  background-color: #121212;
+  color: #f0f0f0;
+}
+
+header {
+  background: linear-gradient(to right, #900, #c00);
+  padding: 1rem;
+  text-align: center;
   color: #fff;
+}
+
+header input {
+  padding: 0.5rem;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+#gameInfo {
+  text-align: center;
+  margin: 1rem;
+}
+
+#cartonesContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.carton {
+  background: #1a1a1a;
+  border: 2px solid #e3c200;
+  padding: 0.5rem;
+  border-radius: 10px;
   text-align: center;
 }
-header {
-  padding: 1em;
-  background-color: #c80000;
-  color: gold;
-  font-size: 1.5em;
-}
-#gameInfo {
-  margin: 1em 0;
-}
-#historyList {
-  display: inline-block;
-  margin-left: 0.5em;
-}
-input#searchInput, #loginGate input {
-  margin-top: 10px;
-  padding: 0.5em;
-  font-size: 1em;
-  width: 250px;
-  border-radius: 10px;
-  border: none;
-}
-#cartonesContainer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  padding: 1em;
-}
-.carton {
-  background-color: #222;
-  border: 2px solid gold;
-  border-radius: 10px;
-  margin: 10px;
-  padding: 10px;
-  width: 200px;
-  color: white;
-  box-shadow: 0 0 10px #c80000;
-  position: relative;
-}
-.carton h2 {
-  margin: 5px 0;
-  color: gold;
-}
-.carton table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-.carton td {
-  border: 1px solid #444;
-  padding: 5px;
-  font-size: 1.2em;
-  color: white;
-  background: #111;
-}
-.carton .btn {
-  background-color: gold;
-  color: black;
-  padding: 6px 10px;
-  border: none;
-  border-radius: 6px;
-  margin-top: 10px;
-  cursor: pointer;
-  font-weight: bold;
-}
-.marked {
-  background: #c80000 !important;
-}
+
 .carton.vendido {
-  opacity: 0.5;
-  border-color: red;
+  background-color: #444;
+  opacity: 0.6;
+  pointer-events: none;
 }
+
+.carton .carton-id {
+  font-weight: bold;
+  color: gold;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.carton .bingo-cell {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  margin: 2px;
+  background-color: #fff;
+  color: #000;
+  line-height: 30px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
+
+.carton .bingo-cell.marked {
+  background-color: #f00;
+  color: #fff;
+}
+
+.carton button {
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.9rem;
+  border: none;
+  background-color: #28a745;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #900;
+  color: #fff;
+  }
