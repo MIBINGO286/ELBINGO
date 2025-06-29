@@ -1,95 +1,66 @@
-import { registrarVenta, obtenerBolas } from './sheetsApi.js';
+// script.js
+import { getData, saveVenta } from './sheetsApi.js';
 
-let allCartones = [];
-let displayed = 0;
-const batchSize = 50;
-let drawnBalls = [];
+let cartones = [];
+let vendidos = new Set();
+let bolas = [];
 
-async function cargarCartones() {
-  const res = await fetch('cartones.json');
-  allCartones = await res.json();
-  mostrarSiguientes();
+const cartonesContainer = document.getElementById('cartonesContainer');
+const searchInput = document.getElementById('searchInput');
+const currentBall = document.getElementById('currentBall');
+const historyList = document.getElementById('historyList');
+
+async function init() {
+  const data = await getData();
+  vendidos = new Set(data.vendidos);
+  bolas = data.bolas;
+  currentBall.textContent = `Bola actual: ${bolas.at(-1) || '--'}`;
+  historyList.textContent = bolas.join(', ');
+  const res = await fetch('./cartones.json');
+  cartones = await res.json();
+  renderCartones(50);
 }
 
-function mostrarSiguientes() {
-  const container = document.getElementById("cartonesContainer");
-  const limite = Math.min(displayed + batchSize, allCartones.length);
-
-  for (let i = displayed; i < limite; i++) {
-    const carton = allCartones[i];
-    const div = document.createElement("div");
-    div.className = "carton";
-    div.setAttribute("data-id", carton.id);
-    div.innerHTML = `
-      <h2>#${carton.id}</h2>
-      <table>
-        ${carton.rows.map(row =>
-          `<tr>${row.map(num => `<td>${num}</td>`).join('')}</tr>`
-        ).join('')}
-      </table>
-      <button class="btn" onclick="comprarCarton('${carton.id}')">Comprar</button>
-    `;
-    container.appendChild(div);
+let loaded = 0;
+function renderCartones(lote) {
+  const frag = document.createDocumentFragment();
+  for (let i = loaded; i < loaded + lote && i < cartones.length; i++) {
+    const carton = cartones[i];
+    const div = document.createElement('div');
+    div.className = 'carton';
+    if (vendidos.has(carton.id)) div.classList.add('vendido');
+    div.innerHTML = `<span class="carton-id">#${carton.id}</span>` +
+      carton.numeros.map(n => `<span class="bingo-cell${bolas.includes(n) ? ' marked' : ''}">${n}</span>`).join('') +
+      (!vendidos.has(carton.id) ? `<button data-id="${carton.id}">Comprar</button>` : '');
+    frag.appendChild(div);
   }
-
-  displayed = limite;
-  resaltarNumeros();
+  cartonesContainer.appendChild(frag);
+  loaded += lote;
 }
 
-window.comprarCarton = async function(id) {
-  window.open(`https://wa.me/584141234567?text=Hola%2C%20quiero%20comprar%20el%20cartón%20%23${id}`, '_blank');
-  await registrarVenta(id);
-  const card = document.querySelector(`[data-id='${id}']`);
-  if (card) {
-    card.classList.add('vendido');
-    const btn = card.querySelector('.btn');
-    btn.innerText = "VENDIDO";
-    btn.disabled = true;
-  }
-}
-
-function buscarCarton() {
-  const query = document.getElementById("searchInput").value.trim();
-  if (!query) return;
-  const carton = allCartones.find(c => c.id === query.padStart(3, '0'));
-  if (carton) {
-    document.getElementById("cartonesContainer").innerHTML = '';
-    displayed = 0;
-    allCartones = [carton];
-    mostrarSiguientes();
-  } else {
-    alert("Cartón no encontrado");
-  }
-}
-
-document.getElementById("searchInput").addEventListener("change", buscarCarton);
-window.addEventListener("scroll", () => {
-  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-    mostrarSiguientes();
+window.addEventListener('scroll', () => {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+    renderCartones(50);
   }
 });
 
-function actualizarBolasUI(){
-  document.getElementById("currentBall").innerText = "Bola actual: " + (drawnBalls[drawnBalls.length-1] || "--");
-  document.getElementById("historyList").innerText = drawnBalls.join(', ');
-  resaltarNumeros();
-}
-
-async function fetchDrawsLoop(){
-  const data = await obtenerBolas();
-  drawnBalls = data.slice(1).map(r => r[1]); // columna bola
-  actualizarBolasUI();
-  setTimeout(fetchDrawsLoop, 5000);
-}
-
-function resaltarNumeros(){
-  if(drawnBalls.length===0) return;
-  document.querySelectorAll('#cartonesContainer td').forEach(td=>{
-    if(drawnBalls.includes(Number(td.textContent))){
-      td.classList.add('marked');
+cartonesContainer.addEventListener('click', async (e) => {
+  if (e.target.tagName === 'BUTTON') {
+    const id = e.target.dataset.id;
+    const confirm = window.confirm(`¿Deseas comprar el cartón #${id}?`);
+    if (confirm) {
+      await saveVenta(id);
+      window.open(`https://wa.me/584141234567?text=Hola%2C%20quiero%20comprar%20el%20cart%C3%B3n%20%23${id}`);
+      e.target.parentElement.classList.add('vendido');
+      e.target.remove();
     }
-  });
-}
+  }
+});
 
-cargarCartones();
-fetchDrawsLoop();
+searchInput.addEventListener('input', () => {
+  const value = searchInput.value.trim();
+  const carton = [...cartonesContainer.children].find(div => div.querySelector('.carton-id')?.textContent.includes(value));
+  if (carton) carton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+});
+
+init();
