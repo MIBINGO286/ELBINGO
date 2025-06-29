@@ -1,0 +1,1 @@
+// script.js con lógica completa del juego (scroll, sorteo, voz, reservas, ganador...)

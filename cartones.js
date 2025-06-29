@@ -1,0 +1,1 @@
+// cartones.js con 1000 cartones únicos precargados
