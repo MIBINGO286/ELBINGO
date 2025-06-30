@@ -38,7 +38,7 @@ document.getElementById('btn-search').addEventListener('click', searchCard);
 document.getElementById('btn-unlock').addEventListener('click', unlockPanel);
 
 // Modal events
-modalCloseBtn.addEventListener('click', () => (modal.classList.add('hidden')));
+modalCloseBtn.addEventListener('click', () => modal.classList.add('hidden'));
 modal.addEventListener('click', e => {
   if (e.target === modal) modal.classList.add('hidden');
 });
@@ -46,20 +46,19 @@ reserveForm.addEventListener('submit', handleReserveSubmit);
 
 // Observer for infinite scroll
 const io = new IntersectionObserver(entries => {
-  if (entries[0].isIntersecting) {
-    loadMoreCards();
-  }
+  if (entries[0].isIntersecting) loadMoreCards();
 });
 io.observe(sentinel);
 
 // Init
 fetchInitialData();
 
+// ---------- CARGA INICIAL ----------
 async function fetchInitialData() {
   const resp = await fetch(CARDS_JSON);
   cardsData = await resp.json();
 
-  // Load reservation status
+  // Estado de reservas
   try {
     const statResp = await fetch(API_URL + '?action=list&offset=0&limit=1000');
     const { cartones } = await statResp.json();
@@ -124,71 +123,60 @@ function renderCard(card) {
   }
 }
 
+// ---------- MODAL DE RESERVA ----------
 function openReserveModal(cardId) {
   modalCardIdSpan.textContent = cardId;
   modal.dataset.cardId = cardId;
   reserveForm.reset();
   modal.classList.remove('hidden');
 }
-// ---- NUEVA función handleReserveSubmit --------------------
+
+// ----------- FUNCIÓN CORREGIDA ------------
 async function handleReserveSubmit(e) {
   e.preventDefault();
-
-  // 1. Datos del cartón e inputs
-  const cardId = Number(modal.dataset.cardId);           // id del cartón
+  const cardId = Number(modal.dataset.cardId);
   const formData = new FormData(reserveForm);
-  const nombre    = formData.get('nombre')?.trim();
-  const apellido  = formData.get('apellido')?.trim();
-  const telefono  = formData.get('telefono')?.trim();
+
+  const nombre   = formData.get('nombre')?.trim();
+  const apellido = formData.get('apellido')?.trim();
+  const telefono = formData.get('telefono')?.trim();
 
   if (!nombre || !apellido || !telefono) {
     alert('Debes completar nombre, apellido y teléfono.');
     return;
   }
 
-  // 2. Registrar en Google Sheets
+  const body = {
+    action: 'reserve',
+    id: cardId,
+    nombre,
+    apellido,
+    telefono
+  };
+
   try {
-    await saveVenta(cardId);        // ↔ función de sheetsApi.js
+    const res  = await fetch(API_URL, { method: 'POST', body: JSON.stringify(body) });
+    const json = await res.json();
+
+    if (json.ok) {
+      reservedMap.set(cardId, true);
+      const cardEl = document.querySelector(`.card[data-id="${cardId}"]`);
+      if (cardEl) cardEl.classList.add('reserved');
+      modal.classList.add('hidden');
+
+      const message = `Hola, deseo reservar el cartón #${cardId} (BINGO JOKER).\nMi nombre es ${nombre} ${apellido} y mi teléfono es ${telefono}`;
+      const phone   = '584266404042';
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+    } else {
+      alert(json.error || 'Ocurrió un error');
+    }
   } catch (err) {
-    console.error('saveVenta error:', err);
-    alert('No se pudo registrar la venta. Intenta de nuevo.');
-    return;
-  }
-
-  // 3. Abrir WhatsApp con mensaje
-  const msg = `Hola, quiero comprar el cartón #${cardId}. Mi nombre es ${nombre} ${apellido} y mi teléfono es ${telefono}.`;
-  const url = `https://wa.me/584266404042?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank');
-
-  // 4. Marcar en UI como vendido y cerrar modal
-  const card = document.querySelector(`.carton[data-id="${cardId}"]`);
-  if (card) {
-    card.classList.add('vendido');
-    const btn = card.querySelector('button');
-    if (btn) btn.remove();
-  }
-  modal.close();               // o el método que uses para ocultar el modal
-}
-
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify(body)
-  });
-  const json = await res.json();
-  if (json.ok) {
-    reservedMap.set(cardId, true);
-    const cardEl = document.querySelector(`.card[data-id="${cardId}"]`);
-    if (cardEl) cardEl.classList.add('reserved');
-    modal.classList.add('hidden');
-
-    const message = `Hola, deseo reservar el cartón #${cardId} (BINGO JOKER)`;
-    const phone = '584266404042';
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
-  } else {
-    alert(json.error || 'Ocurrió un error');
+    console.error('Error al reservar:', err);
+    alert('Error al conectar con el servidor');
   }
 }
 
+// ---------- SORTEO ----------
 function letterForNumber(n) {
   if (n <= 15) return 'B';
   if (n <= 30) return 'I';
@@ -203,8 +191,8 @@ function startDraw() {
     alert('Ya no quedan números');
     return;
   }
+  drawNumber();                                     // primera bola inmediata
   drawTimer = setInterval(drawNumber, DRAW_INTERVAL_MS);
-  drawNumber(); // immediate
 }
 
 function drawNumber() {
@@ -240,6 +228,7 @@ function markNumber(num) {
       if (!winners.has(cid) && checkWin(marks)) {
         winners.add(cid);
         alert('¡BINGO! Cartón #' + cid + ' (' + currentMode.toUpperCase() + ')');
+        stopDraw();                    // ← DETENER SORTEO AL GANAR
       }
     }
   });
@@ -285,6 +274,7 @@ function stopDraw() {
   drawTimer = null;
 }
 
+// ---------- RESTO DE CONTROLES ----------
 function resetGame() {
   if (!confirm('¿Reiniciar partida?')) return;
   stopDraw();
@@ -344,6 +334,7 @@ function unlockPanel() {
   }
 }
 
+// ---------- LOCUCIÓN ----------
 function announce(text) {
   const utter = new SpeechSynthesisUtterance(text);
   speechSynthesis.speak(utter);
