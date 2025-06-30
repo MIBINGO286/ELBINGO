@@ -2,8 +2,10 @@
 // Este módulo se encarga de toda la comunicación con el Google Apps Script
 // que actúa como backend para Google Sheets.
 
-// URL base de tu Google Apps Script desplegado como aplicación web.
-const BASE_URL = '[https://script.google.com/macros/s/AKfycbwLf2p_I86ZAg_u3hQpkkcDKQ0zI4r480EwCmmA-CaLSLV7OAyjZVtqRJ_w2XGGRxylYw/exec](https://script.google.com/macros/s/AKfycbwLf2p_I86ZAg_u3hQpkkcDKQ0zI4r480EwCmmA-CaLSLV7OAyjZVtqRJ_w2XGGRxylYw/exec)';
+// *** CAMBIO CRÍTICO: Importar API_URL desde config.js ***
+import { CONFIG } from './config.js'; // Asegúrate de que esta ruta sea correcta
+
+const BASE_URL = CONFIG.API_URL; // Ahora usa la URL definida en config.js
 
 /**
  * Obtiene los datos actuales del juego (cartones vendidos, bolas extraídas, ganadores)
@@ -42,7 +44,7 @@ export async function getData() {
  * @param {string} id El ID del cartón.
  * @param {boolean} [remove=false] Si es true, la venta se elimina; si es false, se guarda.
  */
-export async function saveVenta(id, remove = false) {
+export async function function saveVenta(id, remove = false) {
   try {
     // Realiza una solicitud GET a la API con la acción 'saveVenta', el ID del cartón
     // y el indicador 'remove'.
