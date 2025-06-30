@@ -44,7 +44,7 @@ export async function getData() {
  * @param {string} id El ID del cartón.
  * @param {boolean} [remove=false] Si es true, la venta se elimina; si es false, se guarda.
  */
-export async function function saveVenta(id, remove = false) {
+export async function saveVenta(id, remove = false) { // <--- ¡AQUÍ SE QUITA EL 'function' DUPLICADO!
   try {
     // Realiza una solicitud GET a la API con la acción 'saveVenta', el ID del cartón
     // y el indicador 'remove'.
