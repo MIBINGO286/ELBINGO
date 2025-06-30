@@ -619,6 +619,8 @@ function markBolaInCartones(bola) {
  * @returns {boolean} True si se encontró al menos un nuevo ganador en esta comprobación, false en caso contrario.
  */
 function checkGanadores() {
+    console.log('--- Iniciando checkGanadores ---');
+    console.log('Bolas extraídas actuales:', bolas);
     let newWinnerFoundThisTurn = false; // Bandera para saber si se encontró un nuevo ganador en esta ronda.
     // Obtiene el estado de las modalidades de victoria desde los checkboxes del panel de admin.
     const modalidadesActivas = {
@@ -626,14 +628,21 @@ function checkGanadores() {
         columna: chkColumna.checked,
         full: chkFull.checked
     };
+    console.log('Modalidades activas:', modalidadesActivas);
+    console.log('Cartones vendidos:', Array.from(vendidos));
+    console.log('Ganadores actuales:', ganadores);
 
     cartones.forEach(carton => {
         // Solo comprueba cartones que han sido vendidos y que aún no han ganado en la modalidad actual.
         if (!vendidos.has(carton.id)) return; // Ignora cartones no vendidos.
 
+        console.log(`Evaluando cartón #${carton.id}...`);
+
         // Comprobar Línea
         if (modalidadesActivas.linea && !ganadores.some(g => String(g.id) === carton.id && g.modalidad === 'Línea')) {
-            if (checkLinea(carton)) {
+            const isLineaWinner = checkLinea(carton);
+            console.log(`Cartón #${carton.id} - checkLinea: ${isLineaWinner}`);
+            if (isLineaWinner) {
                 ganadores.push({ id: carton.id, modalidad: 'Línea' });
                 saveGanador(carton.id, 'Línea'); // Guarda el ganador en Sheets.
                 console.log(`¡Cartón #${carton.id} ha ganado la Línea!`);
@@ -643,7 +652,9 @@ function checkGanadores() {
 
         // Comprobar Columna
         if (modalidadesActivas.columna && !ganadores.some(g => String(g.id) === carton.id && g.modalidad === 'Columna')) {
-            if (checkColumna(carton)) {
+            const isColumnaWinner = checkColumna(carton);
+            console.log(`Cartón #${carton.id} - checkColumna: ${isColumnaWinner}`);
+            if (isColumnaWinner) {
                 ganadores.push({ id: carton.id, modalidad: 'Columna' });
                 saveGanador(carton.id, 'Columna');
                 console.log(`¡Cartón #${carton.id} ha ganado la Columna!`);
@@ -653,7 +664,9 @@ function checkGanadores() {
 
         // Comprobar Cartón lleno (Full House)
         if (modalidadesActivas.full && !ganadores.some(g => String(g.id) === carton.id && g.modalidad === 'Cartón lleno')) {
-            if (checkFull(carton)) {
+            const isFullWinner = checkFull(carton);
+            console.log(`Cartón #${carton.id} - checkFull: ${isFullWinner}`);
+            if (isFullWinner) {
                 ganadores.push({ id: carton.id, modalidad: 'Cartón lleno' });
                 saveGanador(carton.id, 'Cartón lleno');
                 console.log(`¡Cartón #${carton.id} ha ganado el Cartón Lleno!`);
@@ -661,6 +674,7 @@ function checkGanadores() {
             }
         }
     });
+    console.log('--- Fin checkGanadores. Nuevo ganador encontrado esta ronda:', newWinnerFoundThisTurn);
     return newWinnerFoundThisTurn; // Retorna si se encontró algún nuevo ganador en esta ejecución.
 }
 
@@ -671,6 +685,7 @@ function checkGanadores() {
  * @returns {boolean} True si hay una línea completa, false en caso contrario.
  */
 function checkLinea(carton) {
+    console.log(`  checkLinea para cartón ${carton.id}. Matriz:`, carton.matriz);
     for (let r = 0; r < 5; r++) { // Itera sobre cada fila (r de row)
         let rowComplete = true;
         for (let c = 0; c < 5; c++) { // Itera sobre cada columna (c de column)
@@ -682,7 +697,10 @@ function checkLinea(carton) {
                 break; // Sale del bucle de columnas
             }
         }
-        if (rowComplete) return true; // Si la fila está completa, retorna true.
+        if (rowComplete) {
+            console.log(`  Cartón ${carton.id}: Línea ${r} completa.`);
+            return true; // Si la fila está completa, retorna true.
+        }
     }
     return false; // Si ninguna fila está completa.
 }
@@ -694,6 +712,7 @@ function checkLinea(carton) {
  * @returns {boolean} True si hay una columna completa, false en caso contrario.
  */
 function checkColumna(carton) {
+    console.log(`  checkColumna para cartón ${carton.id}. Matriz:`, carton.matriz);
     for (let c = 0; c < 5; c++) { // Itera sobre cada columna (c de column)
         let colComplete = true;
         for (let r = 0; r < 5; r++) { // Itera sobre cada fila (r de row)
@@ -705,7 +724,10 @@ function checkColumna(carton) {
                 break; // Sale del bucle de filas
             }
         }
-        if (colComplete) return true; // Si la columna está completa, retorna true.
+        if (colComplete) {
+            console.log(`  Cartón ${carton.id}: Columna ${c} completa.`);
+            return true; // Si la columna está completa, retorna true.
+        }
     }
     return false; // Si ninguna columna está completa.
 }
@@ -717,9 +739,10 @@ function checkColumna(carton) {
  * @returns {boolean} True si el cartón está lleno, false en caso contrario.
  */
 function checkFull(carton) {
-    // Comprueba si *todos* los números del cartón (incluyendo el 0 si es espacio libre)
-    // están en la lista de bolas extraídas.
-    return carton.numeros.every(n => n === 0 || bolas.includes(n));
+    console.log(`  checkFull para cartón ${carton.id}. Números aplanados:`, carton.numeros);
+    const isFull = carton.numeros.every(n => n === 0 || bolas.includes(n));
+    console.log(`  Cartón ${carton.id}: isFull: ${isFull}`);
+    return isFull;
 }
 
 
