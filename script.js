@@ -130,18 +130,45 @@ function openReserveModal(cardId) {
   reserveForm.reset();
   modal.classList.remove('hidden');
 }
-
+// ---- NUEVA función handleReserveSubmit --------------------
 async function handleReserveSubmit(e) {
   e.preventDefault();
-  const cardId = Number(modal.dataset.cardId);
+
+  // 1. Datos del cartón e inputs
+  const cardId = Number(modal.dataset.cardId);           // id del cartón
   const formData = new FormData(reserveForm);
-  const body = {
-    action: 'reserve',
-    id: cardId,
-    nombre: formData.get('nombre'),
-    apellido: formData.get('apellido'),
-    telefono: formData.get('telefono')
-  };
+  const nombre    = formData.get('nombre')?.trim();
+  const apellido  = formData.get('apellido')?.trim();
+  const telefono  = formData.get('telefono')?.trim();
+
+  if (!nombre || !apellido || !telefono) {
+    alert('Debes completar nombre, apellido y teléfono.');
+    return;
+  }
+
+  // 2. Registrar en Google Sheets
+  try {
+    await saveVenta(cardId);        // ↔ función de sheetsApi.js
+  } catch (err) {
+    console.error('saveVenta error:', err);
+    alert('No se pudo registrar la venta. Intenta de nuevo.');
+    return;
+  }
+
+  // 3. Abrir WhatsApp con mensaje
+  const msg = `Hola, quiero comprar el cartón #${cardId}. Mi nombre es ${nombre} ${apellido} y mi teléfono es ${telefono}.`;
+  const url = `https://wa.me/584266404042?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+
+  // 4. Marcar en UI como vendido y cerrar modal
+  const card = document.querySelector(`.carton[data-id="${cardId}"]`);
+  if (card) {
+    card.classList.add('vendido');
+    const btn = card.querySelector('button');
+    if (btn) btn.remove();
+  }
+  modal.close();               // o el método que uses para ocultar el modal
+}
 
   const res = await fetch(API_URL, {
     method: 'POST',
