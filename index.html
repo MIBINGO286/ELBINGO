@@ -1,63 +1,38 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>BINGO JOKER 🎰</title>
-
-    <!-- Enlaces a Google Fonts CORREGIDOS -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BINGO JOKER 🎰</title> <!-- Título con emoji de casino -->
+  <link rel="stylesheet" href="style.css" />
+  <!-- Enlaza a una fuente de Google Fonts para un estilo más atractivo -->
+  <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
+  <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
+  <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap)" rel="stylesheet">
 </head>
 <body>
+  <header>
+    <h1>BINGO JOKER 🎠</h1> <!-- Título del juego -->
+    <input type="text" id="searchInput" placeholder="Buscar cartón #001 - #1000" /> <!-- Campo de búsqueda de cartones -->
+    <button id="openAdminBtn" class="admin-link">Panel de control</button> <!-- Botón para abrir el panel de admin -->
+  </header>
 
-<header>
-    <h1>BINGO JOKER 🎠</h1>
-    
-    <!-- MEJORA: Añadido un label para accesibilidad -->
-    <label for="searchInput" class="sr-only">Buscar cartón por número</label> 
-    <!-- MEJORA: Cambiado a type="search" -->
-    <input type="search" id="searchInput" placeholder="Buscar cartón #001 - #1000" />
-    
-    <button id="openAdminBtn" class="admin-link">Panel de control</button>
-</header>
-
-<section id="gameInfo">
-    <!-- MEJORA: Añadido aria-live para anunciar cambios -->
-    <h2 id="currentBall" aria-live="polite">Bola actual: --</h2>
-    
+  <section id="gameInfo">
+    <h2 id="currentBall">Bola actual: --</h2> <!-- Muestra la bola de bingo actual -->
     <div id="historyContainer">
-        <strong>Historial:</strong>
-        <span id="historyList" aria-live="polite"></span>
+      <strong>Historial:</strong> <!-- Contenedor para el historial de bolas extraídas -->
+      <span id="historyList"></span>
     </div>
-</section>
+  </section>
 
-<main id="cartonesContainer"></main>
+  <main id="cartonesContainer"></main> <!-- Contenedor donde se renderizarán los cartones de bingo -->
 
-<footer>
-    <!-- Detalle menor: puedes poner el año actual o usar JS para que sea dinámico -->
-    <p>© 2024 BINGO JOKER</p>
-</footer>
+  <footer>
+    <p>&copy; 2025 BINGO JOKER</p> <!-- Pie de página con derechos de autor -->
+  </footer>
 
-<!-- El panel de administración y los modales personalizados serán inyectados aquí por script.js -->
-<script type="module" src="script.js"></script>
+  <!-- El panel de administración y los modales personalizados serán inyectados aquí por script.js -->
 
+  <script type="module" src="script.js"></script> <!-- Enlace al archivo JavaScript principal -->
 </body>
 </html>
-
-<!-- NOTA: Para que el label oculto funcione, necesitarás este CSS:
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
--->
