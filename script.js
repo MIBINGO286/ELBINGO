@@ -1,5 +1,5 @@
 // ==================== CONFIG ====================
-const API_URL = 'https://script.google.com/macros/s/AKfycbzNMTwYH6URiHKx26XPph2prcwyO22p6GyIn49IsfA2dr2yv3rNBinTz3Es2lFw77VUFQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxiphW24FmJe-6ngVwBxl9Dp8mJPcqzBzPQvErXvL13zAMd0af_fh0dcjpEnU0SLZHuGA/exec';
 const CARDS_JSON = 'bingo_cards.json';
 const PAGE_SIZE = 50;
 const DRAW_INTERVAL_MS = 3000;
