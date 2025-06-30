@@ -3,7 +3,7 @@
 export const CONFIG = {
   // URL base para la API de Google Apps Script que interactúa con Google Sheets.
   // Asegúrate de que esta URL sea la correcta y esté desplegada como aplicación web.
-  API_URL: "https://script.google.com/macros/s/AKfycbx7gGTDc7fZbNekI0iY-oTb1SFRGORVIwDJ9QySiRXtaZBDweLMX78BkvpyXgX6ygox2A/exec",
+  API_URL: "https://script.google.com/macros/s/AKfycbyn6xDrPV_cZwpFJhoamqd30hrkCIuKnwp3qzFp91k8CrOH79QAwpMws5QMcKBsy-kWqQ/exec",
   
   // Contraseña en texto plano para el acceso al panel de administrador.
   // ¡IMPORTANTE! En un entorno de producción real, nunca expongas contraseñas directamente en el código del cliente.
