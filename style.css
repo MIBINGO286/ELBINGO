@@ -1,41 +1,23 @@
-body {
-  font-family: Arial, sans-serif;
-  background: #111;
-  color: #fff;
-  text-align: center;
-  padding: 2rem;
+:root{
+  --rojo:#d90429;--negro:#141414;--gris:#222;--texto:#f5f5f5;
 }
-
-h1 {
-  color: #ff0;
-  font-size: 3rem;
-  text-shadow: 0 0 10px red;
-}
-
-button {
-  background: red;
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  margin: 1rem;
-  font-size: 1rem;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-#numeros-sorteados {
-  margin-top: 2rem;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.numero {
-  background: gold;
-  color: black;
-  margin: 5px;
-  padding: 10px;
-  font-weight: bold;
-  border-radius: 5px;
-  width: 50px;
-}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--negro);color:var(--texto);font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+header{background:var(--rojo);padding:1rem;text-align:center}
+h1{letter-spacing:4px;margin-bottom:.5rem}
+.top-bar{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}
+.top-bar input{padding:.4rem;border-radius:5px;border:none;width:120px}
+button{background:var(--gris);color:var(--texto);border:none;padding:.5rem 1rem;border-radius:6px;cursor:pointer}
+button:hover{background:#333}
+#panel.oculto{display:none}
+#cartones{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.75rem;padding:1rem}
+.carton{border:2px solid var(--rojo);border-radius:6px;padding:.3rem;background:var(--gris);cursor:pointer}
+.carton.reservado{background:#555;cursor:not-allowed;opacity:.6}
+.idCarton{text-align:center;font-weight:bold;margin-bottom:.25rem}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
+.celda{background:#000;color:#fff;font-size:.75rem;padding:.25rem;border-radius:2px;text-align:center}
+.free,.marcada{background:var(--rojo);color:#000}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center}
+#modal.oculto{display:none}
+#formReserva{background:var(--negro);border:2px solid var(--rojo);padding:1rem;display:flex;flex-direction:column;gap:.5rem;width:90%;max-width:320px;border-radius:8px}
+#sentinel{height:1px}
