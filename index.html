@@ -3,28 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BINGO JOKER</title>
+  <title>BINGO JOKER</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>BINGO JOKER</h1>
+  <header>
+    <h1>BINGO JOKER</h1>
 
-  <section class="panel-numeros">
-    <button id="btnIniciar">Sacar números</button>
-    <button id="btnDetener">Detener</button>
-    <div id="numeros-sorteados"></div>
-  </section>
+    <!-- buscador y desbloqueo admin -->
+    <div class="top-bar">
+      <input id="buscar" type="number" placeholder="Buscar cartón #…" />
+      <button id="btnBuscar">Buscar</button>
+      <button id="btnAdmin">Desbloquear panel</button>
+    </div>
 
-  <section class="formulario-reserva">
-    <h2>Reservar Cartón</h2>
-    <form id="formReservar">
-      <input name="cartonId" placeholder="ID del cartón" required />
-      <input name="nombre" placeholder="Nombre" required />
-      <input name="apellido" placeholder="Apellido" required />
-      <input name="telefono" placeholder="Teléfono" required />
-      <button type="submit">Reservar Cartón</button>
+    <!-- panel de control (oculto) -->
+    <nav id="panel" class="oculto">
+      <button id="btnIniciar">Sacar números</button>
+      <button id="btnDetener">Detener</button>
+      <button id="btnReset">Reiniciar partida</button>
+    </nav>
+  </header>
+
+  <!-- contenedor de cartones -->
+  <main>
+    <section id="cartones"></section>
+    <div id="sentinel"></div><!-- para scroll infinito -->
+  </main>
+
+  <!-- modal reserva -->
+  <div id="modal" class="oculto">
+    <form id="formReserva">
+      <h2>Reservar cartón <span id="idModal"></span></h2>
+      <input name="nombre"  placeholder="Nombre"   required />
+      <input name="apellido"placeholder="Apellido" required />
+      <input name="telefono"placeholder="Teléfono" required />
+      <button type="submit">Reservar & WhatsApp</button>
+      <button type="button" id="cerrarModal">Cancelar</button>
     </form>
-  </section>
+  </div>
 
   <script src="script.js"></script>
 </body>
