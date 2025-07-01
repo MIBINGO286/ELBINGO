@@ -8,10 +8,10 @@ const ADMIN_SECRET_PROMPT = 'Introduce la contraseña:';
 
 let cardsData = [];
 let loadedCount = 0;
-let reservedMap = new Map();          // id -> true
-let cardsMarks = new Map();           // id -> 5x5 boolean[][]
-let winners = new Set();              // id ganadores
-let currentMode = 'full';             // modo por defecto
+let reservedMap = new Map();         // id -> true
+let cardsMarks = new Map();          // id -> 5x5 boolean[][]
+let winners = new Set();             // id ganadores
+let currentMode = 'full';            // modo por defecto
 let drawTimer = null;
 let remainingNumbers = Array.from({ length: 75 }, (_, i) => i + 1);
 let isAdmin = false;
@@ -61,7 +61,12 @@ async function fetchInitialData() {
 
   // Load reservation status
   try {
-    const statResp = await fetch(API_URL + '?action=list&offset=0&limit=1000');
+    const statResp = await fetch(API_URL + '?action=list&offset=0&limit=1000', {
+      method: 'GET', // Explícitamente GET
+      headers: {
+        'Content-Type': 'application/json' // <--- ¡Esta es la línea clave añadida!
+      }
+    });
     const { cartones } = await statResp.json();
     cartones.forEach(c => {
       if (c.estado === 'RESERVADO') reservedMap.set(c.id, true);
