@@ -7,70 +7,24 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>BINGO JOKER</h1>
+  <h1>BINGO JOKER</h1>
 
-    <div class="top-bar">
-      <div class="search-group">
-        <input type="number" id="search-input" placeholder="Buscar cartón #..." />
-        <button id="btn-search">Buscar</button>
-      </div>
+  <section class="panel-numeros">
+    <button id="btnIniciar">Sacar números</button>
+    <button id="btnDetener">Detener</button>
+    <div id="numeros-sorteados"></div>
+  </section>
 
-      <button id="btn-unlock">Desbloquear panel</button>
-    </div>
-
-    <nav id="control-panel" class="locked">
-      <button id="btn-start">Sacar números</button>
-      <button id="btn-stop">Detener</button>
-      <button id="btn-voice">🔊 Mute</button>
-      <button class="mode" data-mode="vertical">Vertical</button>
-      <button class="mode" data-mode="horizontal">Horizontal</button>
-      <button class="mode" data-mode="diagonal">Diagonal</button>
-      <button class="mode" data-mode="full">Cartón lleno</button>
-      <button id="btn-reset">Reiniciar partida</button>
-      <button id="btn-unreserve-all">Liberar todos</button>
-    </nav>
-  </header>
-
-  <main>
-    <aside id="drawn-panel">
-      <h3>Números cantados</h3>
-      <div id="drawn-grid" class="drawn-grid"></div>
-    </aside>
-
-    <section id="cards-container"></section>
-    <div id="sentinel"></div>
-  </main>
-
-  <!-- Modal reserva -->
-  <div id="modal" class="hidden">
-    <div class="modal-content">
-      <h2>Reservar cartón <span id="modal-card-id"></span></h2>
-      <form id="reserve-form">
-        <label>
-          Nombre
-          <input name="nombre" required />
-        </label>
-        <label>
-          Apellido
-          <input name="apellido" required />
-        </label>
-        <label>
-          Teléfono
-          <input name="telefono" required />
-        </label>
-
-        <div class="bank-info">
-          <p><strong>Banco de Venezuela</strong> o <strong>Banca Amiga</strong></p>
-          <p>C.I.: 28.067.793</p>
-          <p>Teléfono: 04266404042</p>
-        </div>
-
-        <button type="submit">Reservar & WhatsApp</button>
-        <button type="button" id="modal-close">Cancelar</button>
-      </form>
-    </div>
-  </div>
+  <section class="formulario-reserva">
+    <h2>Reservar Cartón</h2>
+    <form id="formReservar">
+      <input name="cartonId" placeholder="ID del cartón" required />
+      <input name="nombre" placeholder="Nombre" required />
+      <input name="apellido" placeholder="Apellido" required />
+      <input name="telefono" placeholder="Teléfono" required />
+      <button type="submit">Reservar Cartón</button>
+    </form>
+  </section>
 
   <script src="script.js"></script>
 </body>
