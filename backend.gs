@@ -1,50 +1,33 @@
-/*  BINGO JOKER – Backend  (CORS incluido)  */
-const SHEET = 'Hoja 1';              // nombre de tu pestaña
-const HEADERS = ['ID','ESTADO','NOMBRE','APELLIDO','TELEFONO']; // fila 1
+const SHEET='Hoja 1';           // cambia si tu pestaña se llama distinto
 
-/* -------------- UTIL -------------- */
-function out(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeader('Access-Control-Allow-Origin', '*')
-    .setHeader('Access-Control-Allow-Methods', 'GET, POST')
-    .setHeader('Access-Control-Allow-Headers', 'Content-Type');
+function _out(o){return ContentService.createTextOutput(JSON.stringify(o))
+  .setMimeType(ContentService.MimeType.JSON)
+  .setHeader('Access-Control-Allow-Origin','*')
+  .setHeader('Access-Control-Allow-Methods','GET, POST')
+  .setHeader('Access-Control-Allow-Headers','Content-Type');}
+
+function _sheet(){return SpreadsheetApp.getActive().getSheetByName(SHEET);}
+function _row(id){
+  const col=_sheet().getRange('A2:A').getValues().flat();
+  const i=col.indexOf(Number(id));
+  return i<0?null:i+2;
 }
 
-function sheet() {
-  return SpreadsheetApp.getActive().getSheetByName(SHEET);
+// GET ?list=1  -> devuelve ids reservados
+function doGet(e){
+  if(e.parameter.list){
+    const rows=_sheet().getRange('A2:B').getValues();
+    const res=rows.filter(r=>r[1]==='RESERVADO').map(r=>r[0]);
+    return _out({reservados:res});
+  }
+  return _out({ok:true});
 }
 
-function findRow(id) {
-  const col = sheet().getRange('A2:A').getValues().flat();
-  const idx = col.indexOf(Number(id));
-  return idx >= 0 ? idx + 2 : null;
-}
-
-/* -------------- GET -------------- */
-function doGet(e) {
-  const { id } = e.parameter;
-  if (!id) return out({ error: 'Falta id' });
-
-  const row = findRow(id);
-  if (!row) return out({ error: 'ID no existe' });
-
-  const values = sheet().getRange(row, 1, 1, HEADERS.length).getValues()[0];
-  const data = Object.fromEntries(HEADERS.map((h, i) => [h.toLowerCase(), values[i]]));
-  return out({ ok: true, data });
-}
-
-/* -------------- POST -------------- */
-function doPost(e) {
-  const body = JSON.parse(e.postData.contents || '{}');
-  const { id, nombre, apellido, telefono } = body;
-  if (!id || !nombre || !apellido || !telefono) return out({ error: 'Datos incompletos' });
-
-  const row = findRow(id);
-  if (!row) return out({ error: 'ID no existe' });
-
-  const rng = sheet().getRange(row, 2, 1, 4);
-  rng.setValues([['RESERVADO', nombre, apellido, telefono]]);
-  return out({ ok: true });
+// POST reserva
+function doPost(e){
+  const {id,nombre,apellido,telefono}=JSON.parse(e.postData.contents||'{}');
+  if(!id||!nombre||!apellido||!telefono) return _out({error:'datos incompletos'});
+  const r=_row(id); if(!r) return _out({error:'ID no existe'});
+  _sheet().getRange(r,2,1,4).setValues([['RESERVADO',nombre,apellido,telefono]]);
+  return _out({ok:true});
 }
