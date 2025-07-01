@@ -1,19 +1,50 @@
+/*  BINGO JOKER – Backend  (CORS incluido)  */
+const SHEET = 'Hoja 1';              // nombre de tu pestaña
+const HEADERS = ['ID','ESTADO','NOMBRE','APELLIDO','TELEFONO']; // fila 1
 
-const SHEET_NAME = "Hoja 1";
+/* -------------- UTIL -------------- */
+function out(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON)
+    .setHeader('Access-Control-Allow-Origin', '*')
+    .setHeader('Access-Control-Allow-Methods', 'GET, POST')
+    .setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
 
+function sheet() {
+  return SpreadsheetApp.getActive().getSheetByName(SHEET);
+}
+
+function findRow(id) {
+  const col = sheet().getRange('A2:A').getValues().flat();
+  const idx = col.indexOf(Number(id));
+  return idx >= 0 ? idx + 2 : null;
+}
+
+/* -------------- GET -------------- */
 function doGet(e) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
-  const { id, nombre, apellido, telefono } = e.parameter;
-  if (!id || !nombre) return ContentService.createTextOutput("Faltan datos");
-  const data = ss.getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0] == id) {
-      ss.getRange(i + 1, 2).setValue("RESERVADO");
-      ss.getRange(i + 1, 3).setValue(nombre);
-      ss.getRange(i + 1, 4).setValue(apellido);
-      ss.getRange(i + 1, 5).setValue(telefono);
-      break;
-    }
-  }
-  return ContentService.createTextOutput("Reservado");
+  const { id } = e.parameter;
+  if (!id) return out({ error: 'Falta id' });
+
+  const row = findRow(id);
+  if (!row) return out({ error: 'ID no existe' });
+
+  const values = sheet().getRange(row, 1, 1, HEADERS.length).getValues()[0];
+  const data = Object.fromEntries(HEADERS.map((h, i) => [h.toLowerCase(), values[i]]));
+  return out({ ok: true, data });
+}
+
+/* -------------- POST -------------- */
+function doPost(e) {
+  const body = JSON.parse(e.postData.contents || '{}');
+  const { id, nombre, apellido, telefono } = body;
+  if (!id || !nombre || !apellido || !telefono) return out({ error: 'Datos incompletos' });
+
+  const row = findRow(id);
+  if (!row) return out({ error: 'ID no existe' });
+
+  const rng = sheet().getRange(row, 2, 1, 4);
+  rng.setValues([['RESERVADO', nombre, apellido, telefono]]);
+  return out({ ok: true });
 }
