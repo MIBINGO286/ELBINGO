@@ -1,6 +1,6 @@
 
 const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbztMoHO_6AtF3RxLggY5sNcJFUOfVnD9ql8mZWIpMGE_I-UVAHc30Nm79M__h-IZdaxYg/exec';
-const API_LISTA = 'https://opensheet.elk.sh/1kPdCww-t1f_CUhD9egbeNn6robyapky8PWCS63P31j4/Hoja%201';
+const API_LISTA = 'AKfycbztMoHO_6AtF3RxLggY5sNcJFUOfVnD9ql8mZWIpMGE_I-UVAHc30Nm79M__h-IZdaxYg';
 const BLOQUE = 50;
 
 let cartones = [];
