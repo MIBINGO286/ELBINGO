@@ -1,6 +1,6 @@
 
-const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbztMoHO_6AtF3RxLggY5sNcJFUOfVnD9ql8mZWIpMGE_I-UVAHc30Nm79M__h-IZdaxYg/exec';
-const API_LISTA = 'AKfycbztMoHO_6AtF3RxLggY5sNcJFUOfVnD9ql8mZWIpMGE_I-UVAHc30Nm79M__h-IZdaxYg';
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxdrSJhX7HuTyfieoZNo5LY7DkC4Wpz2ltPqWCAGPJFQW6ntTftrtvlBIMV9Q9lvmbnow/exec';
+const API_LISTA = 'AKfycbxdrSJhX7HuTyfieoZNo5LY7DkC4Wpz2ltPqWCAGPJFQW6ntTftrtvlBIMV9Q9lvmbnow';
 const BLOQUE = 50;
 
 let cartones = [];
