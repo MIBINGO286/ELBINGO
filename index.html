@@ -1,48 +1,34 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BINGO JOKER</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bingo Joker – Venta de Cartones</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>BINGO JOKER</h1>
+  <header><h1>BINGO JOKER – Venta de Cartones</h1></header>
 
-    <!-- buscador y desbloqueo admin -->
-    <div class="top-bar">
-      <input id="buscar" type="number" placeholder="Buscar cartón #…" />
-      <button id="btnBuscar">Buscar</button>
-      <button id="btnAdmin">Desbloquear panel</button>
-    </div>
-
-    <!-- panel de control (oculto) -->
-    <nav id="panel" class="oculto">
-      <button id="btnIniciar">Sacar números</button>
-      <button id="btnDetener">Detener</button>
-      <button id="btnReset">Reiniciar partida</button>
-    </nav>
-  </header>
-
-  <!-- contenedor de cartones -->
   <main>
-    <section id="cartones"></section>
-    <div id="sentinel"></div><!-- para scroll infinito -->
+    <div id="cartones-container"></div>
+    <div id="loader">Cargando más cartones…</div>
   </main>
 
-  <!-- modal reserva -->
-  <div id="modal" class="oculto">
-    <form id="formReserva">
-      <h2>Reservar cartón <span id="idModal"></span></h2>
-      <input name="nombre"  placeholder="Nombre"   required />
-      <input name="apellido"placeholder="Apellido" required />
-      <input name="telefono"placeholder="Teléfono" required />
-      <button type="submit">Reservar & WhatsApp</button>
-      <button type="button" id="cerrarModal">Cancelar</button>
-    </form>
+  <!-- Modal de reserva -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Reservar cartón #<span id="carton-numero"></span></h2>
+      <form id="form-reserva" autocomplete="off">
+        <input type="hidden" name="ID" id="input-id">
+        <label>Nombre <input name="Nombre" required></label>
+        <label>Apellido <input name="Apellido" required></label>
+        <label>Teléfono <input name="Teléfono" required></label>
+        <button type="submit">Reservar</button>
+        <button type="button" onclick="cerrarModal()">Cancelar</button>
+      </form>
+    </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="script-venta.js" defer></script>
 </body>
 </html>
