@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bingo Joker – Venta de Cartones</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header><h1>BINGO JOKER – Venta de Cartones</h1></header>
@@ -18,11 +18,19 @@
   <div id="modal" class="modal hidden">
     <div class="modal-content">
       <h2>Reservar cartón #<span id="carton-numero"></span></h2>
+
       <form id="form-reserva" autocomplete="off">
-        <input type="hidden" name="ID" id="input-id">
-        <label>Nombre <input name="Nombre" required></label>
-        <label>Apellido <input name="Apellido" required></label>
-        <label>Teléfono <input name="Teléfono" required></label>
+        <input type="hidden" name="ID" id="input-id" />
+        <label>Nombre
+          <input name="Nombre" required />
+        </label>
+        <label>Apellido
+          <input name="Apellido" required />
+        </label>
+        <label>Teléfono
+          <input name="Teléfono" required />
+        </label>
+
         <button type="submit">Reservar</button>
         <button type="button" onclick="cerrarModal()">Cancelar</button>
       </form>
