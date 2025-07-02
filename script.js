@@ -1,136 +1,123 @@
-//---------------------------------------------------
-// CONFIGURACIÓN
-//---------------------------------------------------
-const API_URL  ='https://script.google.com/macros/s/AKfycbwLxvJuwaHL_5tvMJt31VeDYoL5LsaVq8P51gPBnzIxLDK66IH6sUq_1MnGcFDZrsITlA/exec';
-const PHONE    ='584266404042';
-const PASS     ='Jrr035$$*';
-const INTERVAL =3000;
-const PAGE     =50;                 // cartones por tanda
-//---------------------------------------------------
+/* --- CONFIG --- */
+const SHEET_ID   = '1kPdCww-t1f_CUhD9egbeNn6robyapky8PWCS63P31j4';
+const SHEET_NAME = 'Hoja 1';
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbztMoHO_6AtF3RxLggY5sNcJFUOfVnD9ql8mZWIpMGE_I-UVAHc30Nm79M__h-IZdaxYg/exec';
 
-let bolsa      =Array.from({length:75},(_,i)=>i+1);
-let timer      =null;
-let cargados   =0;
-let datosCartones=[];
-let reservados =new Set();
-let admin      =false;
+const API_LISTA  = `https://opensheet.elk.sh/${SHEET_ID}/${encodeURIComponent(SHEET_NAME)}`;
+const BLOQUE     = 50;              // cartones por carga
 
-// refs DOM
-const ctn  =id=>document.getElementById(id);
-const cart =ctn('cartones');
-const modal=ctn('modal');
-const idModal=ctn('idModal');
+/* --- ESTADO --- */
+let cartones = [];                  // cartones.json completo
+let vendidos = new Set();           // IDs reservados
+let pintados = 0;                   // cuántos ya se mostraron
 
-//-------------------- CARGA INICIAL -----------------
-fetch('bingo_cards.json')
-  .then(r=>r.json())
-  .then(json=>{
-    datosCartones=json;
-    cargarMas();
-    // estado reservado desde backend
-    fetch(API_URL+'?list=1')
-      .then(r=>r.json()).then(j=>{
-        (j.reservados||[]).forEach(id=>reservados.add(id));
-        marcarReservados();
-      });
-  });
+/* --- ELEMENTOS --- */
+const contenedor = document.getElementById('cartones-container');
+const loader     = document.getElementById('loader');
+const modal      = document.getElementById('modal');
+const fReserva   = document.getElementById('form-reserva');
+const spanNum    = document.getElementById('carton-numero');
+const inputID    = document.getElementById('input-id');
 
-function cargarMas(){
-  const slice=datosCartones.slice(cargados,cargados+PAGE);
-  slice.forEach(renderCarton);
-  cargados+=slice.length;
+/* --- INICIO --- */
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    cartones  = await fetch('cartones.json').then(r => r.json());
+  } catch (e) {
+    loader.textContent = '❌ No se encontró cartones.json';
+    return;
+  }
+  await actualizarVendidos();
+  pintarBloque();
+  observarScroll();
+});
+
+/* --- Obtener lista de vendidos --- */
+async function actualizarVendidos() {
+  try {
+    const data = await fetch(API_LISTA).then(r => r.json());
+    vendidos = new Set(data.filter(r => r.Estado === 'RESERVADO').map(r => r.ID));
+  } catch (e) {
+    console.warn('No se pudo leer la hoja: ', e);
+  }
 }
 
-function renderCarton(c){
-  const div=document.createElement('div');
-  div.className='carton';
-  div.dataset.id=c.id;
-  div.innerHTML=`<div class="idCarton">#${String(c.id).padStart(4,'0')}</div>`;
-  const g=document.createElement('div');
-  g.className='grid';
-  c.grid.forEach(fila=>fila.forEach(v=>{
-    const cell=document.createElement('div');
-    cell.className='celda';
-    if(v==='FREE') cell.classList.add('free');
-    cell.textContent=v;
-    g.appendChild(cell);
-  }));
-  div.appendChild(g);
-  div.onclick=()=>abrirReserva(c.id);
-  cart.appendChild(div);
+/* --- Pintar cartones --- */
+function crearCarton({ id, grid }) {
+  const art = document.createElement('article');
+  art.className = 'carton';
+  art.dataset.id = id;
+
+  art.innerHTML = `
+    <h3>#${id.toString().padStart(4, '0')}</h3>
+    <div class="grid">
+      ${grid.flat().map(c => `<div class="cell">${c === 'FREE' ? '★' : c}</div>`).join('')}
+    </div>`;
+
+  if (vendidos.has(String(id))) {
+    art.classList.add('vendido');
+  } else {
+    art.onclick = () => abrirModal(id);
+  }
+  return art;
 }
 
-function marcarReservados(){
-  reservados.forEach(id=>{
-    const d=document.querySelector(`.carton[data-id="${id}"]`);
-    if(d) d.classList.add('reservado');
-  });
+function pintarBloque() {
+  const frag = document.createDocumentFragment();
+  for (let i = pintados; i < pintados + BLOQUE && i < cartones.length; i++) {
+    frag.appendChild(crearCarton(cartones[i]));
+  }
+  pintados += BLOQUE;
+  contenedor.appendChild(frag);
+  if (pintados >= cartones.length) loader.style.display = 'none';
 }
 
-// scroll infinito
-new IntersectionObserver(e=>{
-  if(e[0].isIntersecting) cargarMas();
-}).observe(ctn('sentinel'));
-
-//-------------------- RESERVA -----------------------
-function abrirReserva(id){
-  if(reservados.has(id)) return;
-  idModal.textContent=id;
-  modal.classList.remove('oculto');
-  modal.dataset.id=id;
+/* --- Lazy Load --- */
+function observarScroll() {
+  const sentinel = document.createElement('div');
+  contenedor.appendChild(sentinel);
+  new IntersectionObserver(e => {
+    if (e[0].isIntersecting) pintarBloque();
+  }).observe(sentinel);
 }
-ctn('cerrarModal').onclick=()=>modal.classList.add('oculto');
 
-ctn('formReserva').onsubmit=async e=>{
+/* --- Modal --- */
+function abrirModal(id) {
+  inputID.value = id;
+  spanNum.textContent = id;
+  modal.classList.remove('hidden');
+}
+function cerrarModal() {
+  modal.classList.add('hidden');
+  fReserva.reset();
+}
+window.cerrarModal = cerrarModal;
+
+/* --- Reservar --- */
+fReserva.addEventListener('submit', e => {
   e.preventDefault();
-  const id=Number(modal.dataset.id);
-  const {nombre,apellido,telefono}=Object.fromEntries(new FormData(e.target));
-  const body={id,nombre,apellido,telefono};
-  const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  const j=await res.json();
-  if(j.ok){
-    reservados.add(id);
-    marcarReservados();
-    modal.classList.add('oculto');
-    // WhatsApp
-    const msg=`Hola! Quiero reservar el cartón #${id} (BINGO JOKER)`;
-    window.open(`https://wa.me/${PHONE}?text=${encodeURIComponent(msg)}`,'_blank');
-  }else alert(j.error||'Error');
-};
+  const formData = new FormData(fReserva);
 
-//-------------------- SORTEO ------------------------
-function letra(num){return 'BINGO'[Math.floor((num-1)/15)];}
-function cantar(num){
-  const txt=`${letra(num)} ${num}`;
-  speechSynthesis.speak(new SpeechSynthesisUtterance(txt));
-}
-function sacar(){
-  if(!bolsa.length){detener();return;}
-  const idx=Math.floor(Math.random()*bolsa.length);
-  const n=bolsa.splice(idx,1)[0];
-  cantar(n);
-  // (pinta el número si tienes tablero)
-}
-function iniciar(){
-  if(timer) return;
-  sacar(); timer=setInterval(sacar,INTERVAL);
-}
-function detener(){clearInterval(timer);timer=null;}
+  /** Enviamos con un formulario oculto para evitar CORS **/
+  const iframe = document.createElement('iframe');
+  iframe.name  = 'hidden_iframe';
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
 
-//-------------------- BOTONES -----------------------
-ctn('btnIniciar').onclick=iniciar;
-ctn('btnDetener').onclick=detener;
-ctn('btnReset').onclick=()=>{if(admin){bolsa=Array.from({length:75},(_,i)=>i+1);detener();}};
+  const form = document.createElement('form');
+  form.action = WEBAPP_URL;
+  form.method = 'POST';
+  form.target = 'hidden_iframe';
+  for (const [k, v] of formData.entries()) {
+    const inp = document.createElement('input');
+    inp.name = k; inp.value = v; form.appendChild(inp);
+  }
+  document.body.appendChild(form);
+  form.submit();
 
-ctn('btnAdmin').onclick=()=>{
-  if(prompt('Contraseña:')===PASS){
-    admin=true; ctn('panel').classList.remove('oculto');
-  }else alert('Contraseña incorrecta');
-};
-
-//-------------------- BUSCADOR ----------------------
-ctn('btnBuscar').onclick=()=>{
-  const id=Number(ctn('buscar').value);
-  const obj=document.querySelector(`.carton[data-id="${id}"]`);
-  if(obj) obj.scrollIntoView({behavior:'smooth',block:'center'});
-};
+  /** Front‑end: marcar como vendido inmediatamente **/
+  vendidos.add(formData.get('ID'));
+  const cartaDOM = contenedor.querySelector(`.carton[data-id="${formData.get('ID')}"]`);
+  if (cartaDOM) cartaDOM.classList.add('vendido');
+  cerrarModal();
+});
