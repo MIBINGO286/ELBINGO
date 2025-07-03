@@ -1,9 +1,10 @@
-/***********************  CONFIG ***********************//***********************  CONFIG ***********************/
+/***********************  CONFIG ***********************/
 const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbyYn5NKpSjiYaEnggiuEurXVnJej5De1Bc9gLQ7SKJIF1wNtrZjlw87ni5_R2abFpqGnw/exec'; // URL de la WebApp para enviar datos
 const SHEET_JSONP = 'https://opensheet.elk.sh/1kPdCww-t1f_CUhD9egbeNn6robyapky8PWCS63P31j4/CARTONES'; // URL de la hoja CARTONES
 const WHATS_APP   = '584266404042'; // Número de WhatsApp
 const PANEL_PASS  = 'joker123'; // Contraseña para desbloquear el panel de control
 const BLOQUE = 50; // Cantidad de cartones que se deben cargar por vez
+
 /*******************  VARIABLES GLOBALES *******************/
 let cartones   = [];
 let vendidos   = new Set();
@@ -38,24 +39,38 @@ const searchInput    = document.getElementById('search-input');
 
 /*******************  INIT *******************/
 window.addEventListener('DOMContentLoaded', async () => {
-  const response = await fetch(SHEET_JSONP);
-  const data = await response.json();
-  cartones = data.map(carton => {
-    return {
-      id: carton.ID,
-      grid: JSON.parse(carton.Grid),  // Asegúrate de que el grid esté almacenado como JSON
-      estado: carton.Estado || 'LIBRE'
-    };
-  });
+  try {
+    // Cargar los cartones desde la URL de Google Sheets
+    const response = await fetch(SHEET_JSONP);
+    const data = await response.json();
 
-  cartones.sort((a, b) => a.id - b.id);
-  pintarBloque();
-  observarScroll();
+    // Asegurarse de que los datos recibidos estén bien formateados
+    if (!data || data.length === 0) {
+      console.error("No se encontraron cartones");
+      return;
+    }
 
-  jsonp(SHEET_JSONP, 'jsonpVendidos', data => {
-    vendidos = new Set(data.filter(r => String(r.Estado || r.ESTADO).toUpperCase() === 'RESERVADO').map(r => String(r.ID)));
-    refrescarVendidos();
-  });
+    cartones = data.map(carton => {
+      return {
+        id: carton.ID,
+        grid: JSON.parse(carton.Grid),  // Asegúrate de que el grid esté almacenado como JSON
+        estado: carton.Estado || 'LIBRE'
+      };
+    });
+
+    cartones.sort((a, b) => a.id - b.id);
+    pintarBloque();
+    observarScroll();
+
+    // Cargar los cartones vendidos (reservados)
+    jsonp(SHEET_JSONP, 'jsonpVendidos', data => {
+      vendidos = new Set(data.filter(r => String(r.Estado || r.ESTADO).toUpperCase() === 'RESERVADO').map(r => String(r.ID)));
+      refrescarVendidos();
+    });
+
+  } catch (error) {
+    console.error("Error al cargar los cartones:", error);
+  }
 });
 
 /*******************  JSONP helper *******************/
@@ -77,10 +92,11 @@ function crearCarton({ id, grid, estado }) {
   }).join('');
   a.innerHTML = `<h3>#${id.toString().padStart(4, '0')}</h3><div class="grid">${gridHtml}</div>`;
 
+  // Si el cartón está reservado, marcarlo como 'vendido'
   if (estado === 'RESERVADO') {
     a.classList.add('vendido');
   } else {
-    a.onclick = () => abrirModal(id);
+    a.onclick = () => abrirModal(id);  // Si no está reservado, al hacer clic abrir el modal de reserva
   }
 
   return a;
@@ -88,8 +104,8 @@ function crearCarton({ id, grid, estado }) {
 
 function pintarBloque() {
   const frag = document.createDocumentFragment();
-  for (let i = pintados; i < pintados + 50 && i < cartones.length; i++) frag.appendChild(crearCarton(cartones[i]));
-  pintados += 50;
+  for (let i = pintados; i < pintados + BLOQUE && i < cartones.length; i++) frag.appendChild(crearCarton(cartones[i]));
+  pintados += BLOQUE;
   contenedor.appendChild(frag);
   if (pintados >= cartones.length) loader.style.display = 'none';
 }
@@ -126,6 +142,7 @@ formRes.addEventListener('submit', e => {
   const fd = new FormData(formRes);
   if (vendidos.has(fd.get('ID'))) { alert('Ya reservado'); return; }
 
+  // Crear los datos para enviar a la WebApp
   const data = {
     ID: fd.get('ID'),
     Estado: 'RESERVADO',
