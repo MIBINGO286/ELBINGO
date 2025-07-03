@@ -1,5 +1,5 @@
 /***********************  CONFIG ***********************/
-const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbzKk-0Z77cV1Y4rMrtC3qpYMvsY4n0DwPBhmypqn-FCMvdoRb8MJHlKneQPE2L0QX0koQ/exec'; // URL de la WebApp para enviar datos
+const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbyYn5NKpSjiYaEnggiuEurXVnJej5De1Bc9gLQ7SKJIF1wNtrZjlw87ni5_R2abFpqGnw/exec'; // URL de la WebApp para enviar datos
 const SHEET_JSONP = 'https://opensheet.elk.sh/1kPdCww-t1f_CUhD9egbeNn6robyapky8PWCS63P31j4/CARTONES'; // URL de la hoja CARTONES
 const WHATS_APP   = '584266404042'; // Número de WhatsApp
 const PANEL_PASS  = 'joker123'; // Contraseña para desbloquear el panel de control
@@ -39,38 +39,24 @@ const searchInput    = document.getElementById('search-input');
 
 /*******************  INIT *******************/
 window.addEventListener('DOMContentLoaded', async () => {
-  try {
-    // Cargar los cartones desde la URL de Google Sheets
-    const response = await fetch(SHEET_JSONP);
-    const data = await response.json();
+  const response = await fetch(SHEET_JSONP);
+  const data = await response.json();
+  cartones = data.map(carton => {
+    return {
+      id: carton.ID,
+      grid: JSON.parse(carton.Grid),  // Asegúrate de que el grid esté almacenado como JSON
+      estado: carton.Estado || 'LIBRE'
+    };
+  });
 
-    // Asegurarse de que los datos recibidos estén bien formateados
-    if (!data || data.length === 0) {
-      console.error("No se encontraron cartones");
-      return;
-    }
+  cartones.sort((a, b) => a.id - b.id);
+  pintarBloque();
+  observarScroll();
 
-    cartones = data.map(carton => {
-      return {
-        id: carton.ID,
-        grid: JSON.parse(carton.Grid),  // Asegúrate de que el grid esté almacenado como JSON
-        estado: carton.Estado || 'LIBRE'
-      };
-    });
-
-    cartones.sort((a, b) => a.id - b.id);
-    pintarBloque();
-    observarScroll();
-
-    // Cargar los cartones vendidos (reservados)
-    jsonp(SHEET_JSONP, 'jsonpVendidos', data => {
-      vendidos = new Set(data.filter(r => String(r.Estado || r.ESTADO).toUpperCase() === 'RESERVADO').map(r => String(r.ID)));
-      refrescarVendidos();
-    });
-
-  } catch (error) {
-    console.error("Error al cargar los cartones:", error);
-  }
+  jsonp(SHEET_JSONP, 'jsonpVendidos', data => {
+    vendidos = new Set(data.filter(r => String(r.Estado || r.ESTADO).toUpperCase() === 'RESERVADO').map(r => String(r.ID)));
+    refrescarVendidos();
+  });
 });
 
 /*******************  JSONP helper *******************/
@@ -92,11 +78,10 @@ function crearCarton({ id, grid, estado }) {
   }).join('');
   a.innerHTML = `<h3>#${id.toString().padStart(4, '0')}</h3><div class="grid">${gridHtml}</div>`;
 
-  // Si el cartón está reservado, marcarlo como 'vendido'
   if (estado === 'RESERVADO') {
     a.classList.add('vendido');
   } else {
-    a.onclick = () => abrirModal(id);  // Si no está reservado, al hacer clic abrir el modal de reserva
+    a.onclick = () => abrirModal(id);
   }
 
   return a;
@@ -142,7 +127,6 @@ formRes.addEventListener('submit', e => {
   const fd = new FormData(formRes);
   if (vendidos.has(fd.get('ID'))) { alert('Ya reservado'); return; }
 
-  // Crear los datos para enviar a la WebApp
   const data = {
     ID: fd.get('ID'),
     Estado: 'RESERVADO',
@@ -180,98 +164,3 @@ formRes.addEventListener('submit', e => {
   window.open(`https://wa.me/${WHATS_APP}?text=Hola,%20acabo%20de%20reservar%20el%20cartón%20${id}.`, '_blank');
   cerrarModal();
 });
-
-/*******************  PANEL CONTROL *******************/
-btnTogglePanel.onclick = () => panel.classList.toggle('hidden');
-btnUnlock.onclick = () => {
-  if (passwordInput.value === PANEL_PASS) {
-    panelContent.classList.remove('hidden');
-    passwordInput.value = '';
-  } else alert('Contraseña incorrecta');
-};
-
-function letterFor(n) {
-  if (n <= 15) return 'B';
-  if (n <= 30) return 'I';
-  if (n <= 45) return 'N';
-  if (n <= 60) return 'G';
-  return 'O';
-}
-
-function drawBall() {
-  if (!remainingBalls.length) { stopDraw(); alert('¡Sin bolas!'); return; }
-  const idx = Math.floor(Math.random() * remainingBalls.length);
-  const num = remainingBalls.splice(idx, 1)[0];
-  drawn.add(num);
-  currentBall.textContent = `${letterFor(num)} - ${num}`;
-  const li = document.createElement('li');
-  li.textContent = `${letterFor(num)}${num}`;
-  historyList.prepend(li);
-  marcarNumero(num);
-  verificarGanador();
-}
-
-function startDraw() {
-  if (drawInterval) return;
-  drawBall();
-  drawInterval = setInterval(drawBall, 4000);
-  btnStartDraw.disabled = true;
-  btnStopDraw.disabled = false;
-}
-
-function stopDraw() {
-  clearInterval(drawInterval);
-  drawInterval = null;
-  btnStartDraw.disabled = false;
-  btnStopDraw.disabled = true;
-}
-
-btnStartDraw.onclick = startDraw;
-btnStopDraw.onclick = stopDraw;
-
-btnRestart.onclick = () => {
-  if (confirm('¿Reiniciar partida?')) {
-    stopDraw();
-    remainingBalls = Array.from({ length: 75 }, (_, i) => i + 1);
-    drawn.clear();
-    currentBall.textContent = '';
-    historyList.innerHTML = '';
-    contenedor.querySelectorAll('.cell.marked').forEach(c => c.classList.remove('marked'));
-  }
-};
-
-function marcarNumero(n) {
-  document.querySelectorAll(`.cell[data-num="${n}"]`).forEach(c => c.classList.add('marked'));
-}
-
-function getMode() {
-  return [...modeRadios].find(r => r.checked)?.value || 'full';
-}
-
-function cartonGanador(grid, mode) {
-  const checkLine = line => line.every(n => n === 'FREE' || drawn.has(n));
-  const transposed = grid[0].map((_, col) => grid.map(row => row[col]));
-
-  if (mode === 'full') return grid.flat().every(n => n === 'FREE' || drawn.has(n));
-  if (mode === 'horizontal') return grid.some(checkLine);
-  if (mode === 'vertical') return transposed.some(checkLine);
-  if (mode === 'diagonal') {
-    const d1 = [0, 1, 2, 3, 4].map(i => grid[i][i]);
-    const d2 = [0, 1, 2, 3, 4].map(i => grid[i][4 - i]);
-    return checkLine(d1) || checkLine(d2);
-  }
-  return false;
-}
-
-function verificarGanador() {
-  const modo = getMode();
-  for (let { id, grid } of cartones) {
-    if (!vendidos.has(String(id))) continue;
-    if (cartonGanador(grid, modo)) {
-      stopDraw();
-      alert(`¡Cartón ganador #${id}!`);
-      document.querySelector(`.carton[data-id="${id}"]`).scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
-  }
-}
