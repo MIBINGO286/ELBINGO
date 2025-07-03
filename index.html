@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BINGO JOKER</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>BINGO JOKER</h1>
+
+    <!--🔍 Buscador siempre visible-->
+    <input id="search-input" type="search" placeholder="Buscar cartón #…" />
+
+    <!--🔒 Control panel toggle-->
+    <button id="btn-toggle-panel" title="Panel de control">🎛️</button>
+  </header>
+
+  <!--🎛 PANEL DE CONTROL-->
+  <aside id="panel" class="hidden">
+    <h2>Panel de control</h2>
+
+    <!--Desbloqueo-->
+    <div id="unlock-area">
+      <input id="password-input" type="password" placeholder="Contraseña" />
+      <button id="btn-unlock">Desbloquear</button>
+    </div>
+
+    <div id="panel-content" class="hidden">
+      <section>
+        <h3>Sorteo automático</h3>
+        <button id="btn-start-draw">Iniciar sorteo</button>
+        <button id="btn-stop-draw" disabled>Detener sorteo</button>
+        <p id="current-ball"></p>
+      </section>
+
+      <section>
+        <h3>Modalidad de juego</h3>
+        <label><input type="radio" name="mode" value="full" checked /> Cartón lleno</label>
+        <label><input type="radio" name="mode" value="vertical" /> Vertical</label>
+        <label><input type="radio" name="mode" value="horizontal" /> Horizontal</label>
+        <label><input type="radio" name="mode" value="diagonal" /> Diagonal</label>
+      </section>
+
+      <section>
+        <h3>Historial de bolas</h3>
+        <ul id="history"></ul>
+      </section>
+
+      <section>
+        <button id="btn-restart">Reiniciar partida</button>
+      </section>
+
+      <section>
+        <h3>Administrar cartones</h3>
+        <label>Cartón # <input id="input-unreserve" type="number" min="1" /></label>
+        <button id="btn-unreserve">Liberar cartón</button>
+      </section>
+    </div>
+  </aside>
+
+  <main>
+    <div id="cartones-container"></div>
+    <div id="loader">Cargando más cartones…</div>
+  </main>
+
+  <!--Modal reserva-->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Reservar cartón #<span id="carton-numero"></span></h2>
+      <form id="form-reserva" autocomplete="off">
+        <input type="hidden" name="ID" id="input-id" />
+        <label>Nombre <input name="Nombre" required /></label>
+        <label>Apellido <input name="Apellido" required /></label>
+        <label>Teléfono <input name="Teléfono" pattern="\d{10,}" title="Mínimo 10 dígitos" required /></label>
+        <button type="submit" id="btn-reservar">Reservar</button>
+        <button type="button" onclick="cerrarModal()">Cancelar</button>
+      </form>
+      <p id="msg-reserva" class="hidden">✅ ¡Reserva enviada!</p>
+    </div>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
