@@ -1,8 +1,8 @@
 // script.js – versión completa con panel, sorteo, detección de ganadores y CORS resuelto mediante iframe/JSONP
 
 /***********************  CONFIG ***********************/
-const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbzapkct2eJCEvb-5XwDjpHNfe7LCNgrCJQMJzOQDQxmSBvOJBgtYxmuGadJ1oSfmshe7A/exec';
-const SHEET_JSONP = 'https://opensheet.elk.sh/1kPdCww-t1f_CUhD9egbeNn6robyapky8PWCS63P31j4/RESERVAS'; // URL directa de la hoja RESERVAS
+const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbyYn5NKpSjiYaEnggiuEurXVnJej5De1Bc9gLQ7SKJIF1wNtrZjlw87ni5_R2abFpqGnw/exec';
+const SHEET_JSONP = 'https://opensheet.elk.sh/1kPdCww-t1f_CUhD9egbeNn6robyapky8PWCS63P31j4/CARTONES'; // URL directa de la hoja RESERVAS
 const BLOQUE      = 50;
 const WHATS_APP   = '584266404042';
 const PANEL_PASS  = 'joker123';
