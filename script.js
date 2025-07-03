@@ -1,5 +1,5 @@
 /* BINGO JOKER – lógicas de reserva y juego */
-const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzapkct2eJCEvb-5XwDjpHNfe7LCNgrCJQMJzOQDQxmSBvOJBgtYxmuGadJ1oSfmshe7A/exec';
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbwVkCER_VOqdBCxOrDhKWbQZ13_IpN2pyis6vwEjNfvGoFdFC_812vDv1xgBylJu2jCiw/exec';
 const API_LISTA  = 'https://opensheet.elk.sh/AKfycbxdrSJhX7HuTyfieoZNo5LY7DkC4Wpz2ltPqWCAGPJFQW6ntTftrtvlBIMV9Q9lvmbnow/Reservas';
 const BLOQUE = 50;
 
