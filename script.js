@@ -39,7 +39,6 @@ const searchInput    = document.getElementById('search-input');
 
 /*******************  INIT *******************/
 window.addEventListener('DOMContentLoaded', async () => {
-  // Cargar los cartones desde Google Sheets
   const response = await fetch(SHEET_JSONP);
   const data = await response.json();
   
@@ -49,7 +48,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   cartones = data.map(carton => {
     let grid = [];
     try {
-      grid = JSON.parse(carton.GRID);  // Intentamos parsear el GRID
+      // Intentamos parsear el GRID
+      grid = JSON.parse(carton.GRID);  
     } catch (error) {
       console.error(`Error al parsear GRID para el cartón ID ${carton.ID}:`, error);
       grid = [];  // Si ocurre un error, asignamos un array vacío
@@ -106,8 +106,8 @@ function crearCarton({ id, grid, estado }) {
 
 function pintarBloque() {
   const frag = document.createDocumentFragment();
-  for (let i = pintados; i < pintados + BLOQUE && i < cartones.length; i++) frag.appendChild(crearCarton(cartones[i]));
-  pintados += BLOQUE;
+  for (let i = pintados; i < pintados + 50 && i < cartones.length; i++) frag.appendChild(crearCarton(cartones[i]));
+  pintados += 50;
   contenedor.appendChild(frag);
   if (pintados >= cartones.length) loader.style.display = 'none';
 }
@@ -181,3 +181,4 @@ formRes.addEventListener('submit', e => {
   window.open(`https://wa.me/${WHATS_APP}?text=Hola,%20acabo%20de%20reservar%20el%20cartón%20${id}.`, '_blank');
   cerrarModal();
 });
+
