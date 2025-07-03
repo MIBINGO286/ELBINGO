@@ -1,5 +1,5 @@
 /***********************  CONFIG ***********************/
-const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbyYn5NKpSjiYaEnggiuEurXVnJej5De1Bc9gLQ7SKJIF1wNtrZjlw87ni5_R2abFpqGnw/exec'; // URL de la WebApp para enviar datos
+const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbzKk-0Z77cV1Y4rMrtC3qpYMvsY4n0DwPBhmypqn-FCMvdoRb8MJHlKneQPE2L0QX0koQ/exec'; // URL de la WebApp para enviar datos
 const SHEET_JSONP = 'https://opensheet.elk.sh/1kPdCww-t1f_CUhD9egbeNn6robyapky8PWCS63P31j4/CARTONES'; // URL de la hoja CARTONES
 const WHATS_APP   = '584266404042'; // Número de WhatsApp
 const PANEL_PASS  = 'joker123'; // Contraseña para desbloquear el panel de control
