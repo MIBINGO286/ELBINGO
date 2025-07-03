@@ -1,11 +1,8 @@
-// script.js – versión completa con panel, sorteo, detección de ganadores y CORS resuelto mediante iframe/JSONP
-
 /***********************  CONFIG ***********************/
-const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbyYn5NKpSjiYaEnggiuEurXVnJej5De1Bc9gLQ7SKJIF1wNtrZjlw87ni5_R2abFpqGnw/exec';
-const SHEET_JSONP = 'https://opensheet.elk.sh/1kPdCww-t1f_CUhD9egbeNn6robyapky8PWCS63P31j4/CARTONES'; // URL directa de la hoja RESERVAS
-const BLOQUE      = 50;
-const WHATS_APP   = '584266404042';
-const PANEL_PASS  = 'joker123';
+const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbzapkct2eJCEvb-5XwDjpHNfe7LCNgrCJQMJzOQDQxmSBvOJBgtYxmuGadJ1oSfmshe7A/exec';
+const SHEET_JSONP = 'https://opensheet.elk.sh/1kPdCww-t1f_CUhD9egbeNn6robyapky8PWCS63P31j4/CARTONES'; // URL de la hoja CARTONES
+const WHATS_APP   = '584266404042'; // Número de WhatsApp
+const PANEL_PASS  = 'joker123'; // Contraseña para desbloquear panel de control
 
 /*******************  VARIABLES GLOBALES *******************/
 let cartones   = [];
@@ -73,16 +70,19 @@ function crearCarton({id,grid}){
   else a.onclick=()=>abrirModal(id);
   return a;
 }
+
 function pintarBloque(){
   const frag=document.createDocumentFragment();
   for(let i=pintados;i<pintados+BLOQUE&&i<cartones.length;i++) frag.appendChild(crearCarton(cartones[i]));
   pintados+=BLOQUE; contenedor.appendChild(frag);
   if(pintados>=cartones.length) loader.style.display='none';
 }
+
 function observarScroll(){
   const sent=document.createElement('div');contenedor.appendChild(sent);
   new IntersectionObserver(e=>{if(e[0].isIntersecting) pintarBloque();}).observe(sent);
 }
+
 function refrescarVendidos(){
   contenedor.querySelectorAll('.carton').forEach(c=>{
     if(vendidos.has(c.dataset.id)) c.classList.add('vendido');
@@ -122,6 +122,7 @@ function drawBall(){
   const li=document.createElement('li'); li.textContent=`${letterFor(num)}${num}`; historyList.prepend(li);
   marcarNumero(num); verificarGanador();
 }
+
 function startDraw(){ if(drawInterval) return; drawBall(); drawInterval=setInterval(drawBall,4000); btnStartDraw.disabled=true; btnStopDraw.disabled=false; }
 function stopDraw(){ clearInterval(drawInterval); drawInterval=null; btnStartDraw.disabled=false; btnStopDraw.disabled=true; }
 btnStartDraw.onclick=startDraw; btnStopDraw.onclick=stopDraw;
@@ -135,6 +136,7 @@ btnRestart.onclick=()=>{
 
 function marcarNumero(n){ document.querySelectorAll(`.cell[data-num="${n}"]`).forEach(c=>c.classList.add('marked')); }
 function getMode(){ return [...modeRadios].find(r=>r.checked)?.value || 'full'; }
+
 function cartonGanador(grid, mode) {
   const checkLine = line => line.every(n => n === 'FREE' || drawn.has(n));
   const transposed = grid[0].map((_, col) => grid.map(row => row[col]));
@@ -149,6 +151,7 @@ function cartonGanador(grid, mode) {
   }
   return false;
 }
+
 function verificarGanador(){
   const modo = getMode();
   for (let {id,grid} of cartones) {
