@@ -1,7 +1,7 @@
 /***************************
  *  CONFIGURACIÓN GENERAL  *
  ***************************/
-const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbzapkct2eJCEvb-5XwDjpHNfe7LCNgrCJQMJzOQDQxmSBvOJBgtYxmuGadJ1oSfmshe7A/exec';
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxC4GxqUg5lnl80Zt6KpAmLEoWWYXcT9xgQMIqfyvzzwu8rAH2fdc1q5Dg5CHGOmi7BHA/exec';
 const BLOQUE     = 50;              // cuántos cartones cargar por scroll
 const WHATS_APP  = '584266404042';  // tu número WhatsApp a 12 dígitos sin “+”
 
