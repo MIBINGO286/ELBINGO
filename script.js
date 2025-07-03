@@ -47,9 +47,17 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // Procesar los cartones
   cartones = data.map(carton => {
+    let grid = [];
+    try {
+      grid = JSON.parse(carton.GRID);  // Intentamos parsear el GRID
+    } catch (error) {
+      console.error(`Error al parsear GRID para el cartón ID ${carton.ID}:`, error);
+      grid = [];  // Si ocurre un error, asignamos un array vacío
+    }
+
     return {
       id: carton.ID,
-      grid: JSON.parse(carton.GRID),  // Asegúrate de que el GRID esté almacenado como JSON
+      grid: grid,  // Asegúrate de que el GRID esté correctamente procesado
       estado: carton.ESTADO || 'LIBRE'
     };
   });
@@ -173,98 +181,3 @@ formRes.addEventListener('submit', e => {
   window.open(`https://wa.me/${WHATS_APP}?text=Hola,%20acabo%20de%20reservar%20el%20cartón%20${id}.`, '_blank');
   cerrarModal();
 });
-
-/*******************  PANEL CONTROL *******************/
-btnTogglePanel.onclick = () => panel.classList.toggle('hidden');
-btnUnlock.onclick = () => {
-  if (passwordInput.value === PANEL_PASS) {
-    panelContent.classList.remove('hidden');
-    passwordInput.value = '';
-  } else alert('Contraseña incorrecta');
-};
-
-function letterFor(n) {
-  if (n <= 15) return 'B';
-  if (n <= 30) return 'I';
-  if (n <= 45) return 'N';
-  if (n <= 60) return 'G';
-  return 'O';
-}
-
-function drawBall() {
-  if (!remainingBalls.length) { stopDraw(); alert('¡Sin bolas!'); return; }
-  const idx = Math.floor(Math.random() * remainingBalls.length);
-  const num = remainingBalls.splice(idx, 1)[0];
-  drawn.add(num);
-  currentBall.textContent = `${letterFor(num)} - ${num}`;
-  const li = document.createElement('li');
-  li.textContent = `${letterFor(num)}${num}`;
-  historyList.prepend(li);
-  marcarNumero(num);
-  verificarGanador();
-}
-
-function startDraw() {
-  if (drawInterval) return;
-  drawBall();
-  drawInterval = setInterval(drawBall, 4000);
-  btnStartDraw.disabled = true;
-  btnStopDraw.disabled = false;
-}
-
-function stopDraw() {
-  clearInterval(drawInterval);
-  drawInterval = null;
-  btnStartDraw.disabled = false;
-  btnStopDraw.disabled = true;
-}
-
-btnStartDraw.onclick = startDraw;
-btnStopDraw.onclick = stopDraw;
-
-btnRestart.onclick = () => {
-  if (confirm('¿Reiniciar partida?')) {
-    stopDraw();
-    remainingBalls = Array.from({ length: 75 }, (_, i) => i + 1);
-    drawn.clear();
-    currentBall.textContent = '';
-    historyList.innerHTML = '';
-    contenedor.querySelectorAll('.cell.marked').forEach(c => c.classList.remove('marked'));
-  }
-};
-
-function marcarNumero(n) {
-  document.querySelectorAll(`.cell[data-num="${n}"]`).forEach(c => c.classList.add('marked'));
-}
-
-function getMode() {
-  return [...modeRadios].find(r => r.checked)?.value || 'full';
-}
-
-function cartonGanador(grid, mode) {
-  const checkLine = line => line.every(n => n === 'FREE' || drawn.has(n));
-  const transposed = grid[0].map((_, col) => grid.map(row => row[col]));
-
-  if (mode === 'full') return grid.flat().every(n => n === 'FREE' || drawn.has(n));
-  if (mode === 'horizontal') return grid.some(checkLine);
-  if (mode === 'vertical') return transposed.some(checkLine);
-  if (mode === 'diagonal') {
-    const d1 = [0, 1, 2, 3, 4].map(i => grid[i][i]);
-    const d2 = [0, 1, 2, 3, 4].map(i => grid[i][4 - i]);
-    return checkLine(d1) || checkLine(d2);
-  }
-  return false;
-}
-
-function verificarGanador() {
-  const modo = getMode();
-  for (let { id, grid } of cartones) {
-    if (!vendidos.has(String(id))) continue;
-    if (cartonGanador(grid, modo)) {
-      stopDraw();
-      alert(`¡Cartón ganador #${id}!`);
-      document.querySelector(`.carton[data-id="${id}"]`).scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
-  }
-}
