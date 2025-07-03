@@ -3,7 +3,7 @@ const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbyYn5NKpSjiYaEnggiu
 const SHEET_JSONP = 'https://opensheet.elk.sh/1kPdCww-t1f_CUhD9egbeNn6robyapky8PWCS63P31j4/CARTONES'; // URL de la hoja CARTONES
 const WHATS_APP   = '584266404042'; // Número de WhatsApp
 const PANEL_PASS  = 'joker123'; // Contraseña para desbloquear el panel de control
-
+const BLOQUE = 50; // Cantidad de cartones que se deben cargar por vez
 /*******************  VARIABLES GLOBALES *******************/
 let cartones   = [];
 let vendidos   = new Set();
