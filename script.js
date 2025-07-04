@@ -1,8 +1,9 @@
-/***********************  CONFIG ***********************/
+/***********************  CONFIGURACIÓN ***********************/
 const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbwfDVDNqvy-JHMU6Xi2EblwwCuDAU_uazEz0tuebXWxqdoPLVLyAjpktlUQuKNLX6Rk/exec'; // URL de la WebApp para enviar datos
-const SHEET_JSONP = 'https://opensheet.elk.sh/1kPdCww-t1f_CUhD9egbeNn6robyapky8PWCS63P31j4/CARTONES'; // URL de la hoja CARTONES
+const CARTONES_JSON_URL = 'https://yourdomain.com/path/to/cartones.json'; // Asegúrate de usar la URL correcta para tu archivo JSON
 const WHATS_APP   = '584266404042'; // Número de WhatsApp
 const PANEL_PASS  = 'joker123'; // Contraseña para desbloquear el panel de control
+const BLOQUE = 50; // Cantidad de cartones que se deben cargar por vez
 
 /*******************  VARIABLES GLOBALES *******************/
 let cartones   = [];
@@ -36,26 +37,39 @@ const inputUnreserve = document.getElementById('input-unreserve');
 const btnUnreserve   = document.getElementById('btn-unreserve');
 const searchInput    = document.getElementById('search-input');
 
-/*******************  INIT *******************/
+/*******************  INICIALIZACIÓN *******************/
 window.addEventListener('DOMContentLoaded', async () => {
-  const response = await fetch('cartones.json');
-  const data = await response.json();
-  cartones = data.map(carton => {
-    return {
-      id: carton.ID,
-      grid: JSON.parse(carton.Grid),  // Asegúrate de que el grid esté almacenado como JSON
-      estado: carton.Estado || 'LIBRE'
-    };
-  });
+  try {
+    // Cargar cartones desde el archivo JSON
+    const response = await fetch(CARTONES_JSON_URL);
+    const data = await response.json();
+    console.log("Datos cargados: ", data);
+    
+    // Procesar los cartones cargados
+    cartones = data.map(carton => {
+      return {
+        id: carton.ID,
+        grid: JSON.parse(carton.Grid),
+        estado: carton.Estado || 'LIBRE'
+      };
+    });
 
-  cartones.sort((a, b) => a.id - b.id);
-  pintarBloque();
-  observarScroll();
+    // Ordenar los cartones por ID
+    cartones.sort((a, b) => a.id - b.id);
 
-  jsonp(SHEET_JSONP, 'jsonpVendidos', data => {
-    vendidos = new Set(data.filter(r => String(r.Estado || r.ESTADO).toUpperCase() === 'RESERVADO').map(r => String(r.ID)));
-    refrescarVendidos();
-  });
+    // Pintar los primeros cartones
+    pintarBloque();
+    observarScroll();
+
+    // Cargar los cartones reservados
+    jsonp(SHEET_JSONP, 'jsonpVendidos', data => {
+      vendidos = new Set(data.filter(r => String(r.Estado || r.ESTADO).toUpperCase() === 'RESERVADO').map(r => String(r.ID)));
+      refrescarVendidos();
+    });
+
+  } catch (error) {
+    console.error("Error al cargar cartones: ", error);
+  }
 });
 
 /*******************  JSONP helper *******************/
@@ -88,8 +102,8 @@ function crearCarton({ id, grid, estado }) {
 
 function pintarBloque() {
   const frag = document.createDocumentFragment();
-  for (let i = pintados; i < pintados + 50 && i < cartones.length; i++) frag.appendChild(crearCarton(cartones[i]));
-  pintados += 50;
+  for (let i = pintados; i < pintados + BLOQUE && i < cartones.length; i++) frag.appendChild(crearCarton(cartones[i]));
+  pintados += BLOQUE;
   contenedor.appendChild(frag);
   if (pintados >= cartones.length) loader.style.display = 'none';
 }
