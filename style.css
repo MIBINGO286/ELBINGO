@@ -1,0 +1,123 @@
+/* --- Reset básico --- */
+* { box-sizing: border-box; }
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #111;
+  color: #fff;
+  margin: 0;
+}
+header {
+  background: #222;
+  padding: 0.5rem 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+h1 { margin: 0; color: #e50914; letter-spacing: 0.05em; }
+
+#search-input {
+  flex: 1;
+  min-width: 150px;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  border: none;
+}
+
+#btn-toggle-panel {
+  background: #ffd700;
+  border: none;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Panel */
+aside#panel {
+  position: fixed;
+  top: 0; right: 0;
+  width: 320px;
+  height: 100%;
+  background: #222;
+  border-left: 2px solid #ffd700;
+  padding: 1rem;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+}
+aside#panel.hidden { transform: translateX(100%); }
+#panel h2 { margin-top: 0; color: #ffd700; }
+
+#panel-content.hidden { opacity: 0.4; pointer-events: none; }
+
+button {
+  background: #e50914;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+}
+button:disabled { opacity: 0.5; cursor: default; }
+
+section { margin-bottom: 1.5rem; }
+section h3 { margin-bottom: 0.5rem; color: #ffd700; }
+
+/* Cartones */
+#cartones-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+.carton {
+  border: 2px solid #ffd700;
+  width: max-content;
+  padding: 0.5rem;
+  background: #333;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.carton:hover { transform: scale(1.04); }
+.carton.vendido {
+  opacity: 0.3;
+  pointer-events: none;
+}
+.carton h3 {
+  margin: 0 0 0.3rem 0;
+  text-align: center;
+  color: #ffd700;
+  font-size: 1rem;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 2rem);
+  gap: 0.2rem;
+}
+.cell {
+  background: #444;
+  padding: 0.4rem;
+  border: 1px solid #555;
+  text-align: center;
+}
+#loader { padding: 1rem; }
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.modal.hidden { display: none; }
+.modal-content {
+  background: #222;
+  padding: 1rem 2rem;
+  border: 2px solid #ffd700;
+  border-radius: 8px;
+}
+label { display: block; margin: 0.5rem 0; }
+#msg-reserva { color: #0f0; margin-top: 0.5rem; }
