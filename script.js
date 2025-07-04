@@ -159,8 +159,4 @@ function drawBall(){
 }
 function startDraw(){ if(drawInterval) return; drawBall(); drawInterval=setInterval(drawBall,4000); btnStartDraw.disabled=true; btnStopDraw.disabled=false; }
 function stopDraw(){ clearInterval(drawInterval); drawInterval=null; btnStartDraw.disabled=false; btnStopDraw.disabled=true; }
-btnStartDraw.onclick=startDraw; btnStopDraw.onclick=stopDraw;
-
-btnRestart.onclick=()=>{
-  if(confirm('¿Reiniciar partida?')){
-    stopDraw(); remainingBalls=Array.from({length:75},(_,i)=>
+btnStart
