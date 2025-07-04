@@ -1,12 +1,9 @@
-/***********************  CONFIG ***********************/
-const CARTONES_JSON_URL = 'cartones.json'; // URL o ruta al archivo cartones.json
-const WHATS_APP = '584266404042'; // Número de WhatsApp
+const CARTONES_JSON_URL = '1kPdCww-t1f_CUhD9egbeNn6robyapky8PWCS63P31j4'; // Reemplaza con la URL de tu archivo cartones.json
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxHSaYZatIzKTfYmk421iKeM90RytSf7vkd7ewAm7nKB4BvGtO5KU-1iL8mx39aONI9ZA/exec'; // URL de tu WebApp de Google Apps Script para actualizar el estado del cartón
 
-/*******************  VARIABLES GLOBALES *******************/
-let cartones = [];  // Array de cartones disponibles
-let vendidos = new Set();  // Set de cartones reservados
+let cartones = [];
+let vendidos = new Set();
 
-/*******************  FUNCIONES PARA CARGAR CARTONES *******************/
 async function cargarCartones() {
   try {
     const response = await fetch(CARTONES_JSON_URL);
@@ -18,7 +15,6 @@ async function cargarCartones() {
   }
 }
 
-/*******************  FUNCIONES PARA MOSTRAR CARTONES *******************/
 function mostrarCartones() {
   const contenedor = document.getElementById('cartones-container');
   contenedor.innerHTML = '';  // Limpiar contenedor
@@ -44,7 +40,6 @@ function mostrarCartones() {
   });
 }
 
-/*******************  FUNCION PARA RESERVAR CARTÓN *******************/
 function reservarCarton(carton) {
   if (carton.ESTADO === 'RESERVADO') {
     alert('Este cartón ya está reservado.');
@@ -59,35 +54,28 @@ function reservarCarton(carton) {
   carton.ESTADO = 'RESERVADO';
   vendidos.add(carton.ID);
 
-  // Actualizar visualización
-  mostrarCartones();
+  // Actualizar el archivo cartones.json (usando la WebApp)
+  const data = {
+    ID: carton.ID,
+    Nombre: nombre,
+    Apellido: apellido,
+    Telefono: telefono
+  };
 
-  // Enviar mensaje de WhatsApp
-  const mensaje = `Hola, he reservado el cartón #${carton.ID}.\nNombre: ${nombre} ${apellido}\nTeléfono: ${telefono}`;
-  window.open(`https://wa.me/${WHATS_APP}?text=${encodeURIComponent(mensaje)}`, '_blank');
-
-  // Actualizar el archivo cartones.json
-  actualizarCartones();
-}
-
-/*******************  FUNCION PARA ACTUALIZAR cartones.json *******************/
-async function actualizarCartones() {
-  try {
-    const response = await fetch(CARTONES_JSON_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(cartones)  // Enviar la versión actualizada de los cartones
+  fetch(WEBAPP_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  }).then(response => response.text())
+    .then(result => {
+      alert(result);
+      mostrarCartones();
+    }).catch(error => {
+      console.error('Error al realizar la reserva:', error);
     });
-
-    if (!response.ok) {
-      throw new Error('Error al actualizar el archivo cartones.json');
-    }
-  } catch (error) {
-    console.error('Error al actualizar cartones:', error);
-  }
 }
 
-/*******************  INIT *******************/
 window.addEventListener('DOMContentLoaded', cargarCartones);
+
