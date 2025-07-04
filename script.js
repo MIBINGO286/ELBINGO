@@ -1,4 +1,4 @@
-// script.js – versión completa con panel, sorteo y bloqueo persistente
+// script.js – versión completa con panel, sorteo y bloqueo persistente (actualizado)
 
 /***********************  CONFIG ***********************/
 const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbxKH9xP-YZ6UXdTw9MtjeF9C19lMlXH0k-oMrbXiWqhrhoN0xJJPPpa6NOGFJo7x_5G/exec';
@@ -40,15 +40,29 @@ const btnUnreserve   = document.getElementById('btn-unreserve');
 const searchInput    = document.getElementById('search-input');
 
 /*******************  INIT *******************/
-window.addEventListener('DOMContentLoaded', async ()=>{
-  cartones = await fetch('cartones.json').then(r=>r.json());
-  cartones.sort((a,b)=>a.id-b.id);
-  pintarBloque();
-  observarScroll();
+window.addEventListener('DOMContentLoaded', async () => {
+  /* 1. Cargar cartones.json con manejo de error */
+  try {
+    const r = await fetch('cartones.json', {cache:'no-store'});
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    cartones = await r.json();
+    cartones.sort((a,b)=>a.id-b.id);
+    pintarBloque();
+    observarScroll();
+  } catch(err) {
+    console.error('No se pudo cargar cartones.json', err);
+    loader.textContent = '⚠️ Error al cargar cartones';
+    return; // abortar resto de inicialización
+  }
 
+  /* 2. Obtener lista de reservados vía JSONP */
   jsonp(SHEET_JSONP,'jsonpVendidos',data=>{
-    vendidos = new Set(data.filter(r=>String(r.Estado||r.ESTADO).toUpperCase()==='RESERVADO').map(r=>String(r.ID)));
-    refrescarVendidos();
+    try {
+      vendidos = new Set(data.filter(r=>String(r.Estado||r.ESTADO).toUpperCase()==='RESERVADO').map(r=>String(r.ID)));
+      refrescarVendidos();
+    }catch(e){
+      console.warn('opensheet error',e);
+    }
   });
 });
 
@@ -90,7 +104,7 @@ function refrescarVendidos(){
   });
 }
 
-/*******************  RESERVAR CARTÓN (sin CORS, vía iframe) *******************/
+/*******************  RESERVAR CARTÓN (iframe oculto, sin CORS) *******************/
 function abrirModal(id){ inputID.value=id; spanNum.textContent=id; modal.classList.remove('hidden'); }
 function cerrarModal(){ modal.classList.add('hidden'); formRes.reset(); }
 window.cerrarModal=cerrarModal;
@@ -99,18 +113,18 @@ formRes.addEventListener('submit',e=>{
   e.preventDefault();
   const fd = new FormData(formRes);
   const id = fd.get('ID');
-  if(vendidos.has(id)){ alert('Ese cartón ya está reservado'); return; }
+  if(vendidos.has(id)) { alert('Ese cartón ya está reservado'); return; }
 
-  // Crear iframe oculto para evitar CORS
-  const ifr=document.createElement('iframe');
-  ifr.name='hidden_iframe';
-  ifr.style.display='none';
+  // 1. Enviar a Apps Script sin CORS
+  const ifr = document.createElement('iframe');
+  ifr.name = 'hidden_iframe';
+  ifr.style.display = 'none';
   document.body.appendChild(ifr);
 
-  const f=document.createElement('form');
-  f.action=WEBAPP_URL;
-  f.method='POST';
-  f.target='hidden_iframe';
+  const f = document.createElement('form');
+  f.action = WEBAPP_URL;
+  f.method = 'POST';
+  f.target = 'hidden_iframe';
   fd.forEach((v,k)=>{
     const inp=document.createElement('input');
     inp.name=k; inp.value=v; f.appendChild(inp);
@@ -118,43 +132,35 @@ formRes.addEventListener('submit',e=>{
   document.body.appendChild(f);
   f.submit();
 
-  // Marcar inmediatamente como vendido
+  // 2. Marcar en UI y WhatsApp
   vendidos.add(id);
   refrescarVendidos();
-
-  // Abrir WhatsApp con mensaje pre‑llenado
   const msg = encodeURIComponent(`Hola, quiero comprar el cartón ${id} y ya estoy por realizar el pago.`);
   window.open(`https://wa.me/${WHATS_APP}?text=${msg}`,'_blank');
-
   cerrarModal();
 });
 
 /*******************  PANEL CONTROL *******************/
 btnTogglePanel.onclick=()=>panel.classList.toggle('hidden');
 btnUnlock.onclick=()=>{
-  if(passwordInput.value===PANEL_PASS){panelContent.classList.remove('hidden');passwordInput.value='';}
+  if(passwordInput.value===PANEL_PASS){ panelContent.classList.remove('hidden'); passwordInput.value=''; }
   else alert('Contraseña incorrecta');
 };
 
 /*******************  SORTEO *******************/
 function letterFor(n){return n<=15?'B':n<=30?'I':n<=45?'N':n<=60?'G':'O';}
 function drawBall(){
-  if(!remainingBalls.length){stopDraw();alert('¡Sin bolas!');return;}
+  if(!remainingBalls.length){ stopDraw(); alert('¡Sin bolas!'); return; }
   const idx=Math.floor(Math.random()*remainingBalls.length);
-  const num=remainingBalls.splice(idx,1)[0];drawn.add(num);
+  const num=remainingBalls.splice(idx,1)[0]; drawn.add(num);
   currentBall.textContent=`${letterFor(num)} - ${num}`;
-  const li=document.createElement('li');li.textContent=`${letterFor(num)}${num}`;historyList.prepend(li);
-  marcarNumero(num);verificarGanador();
+  const li=document.createElement('li'); li.textContent=`${letterFor(num)}${num}`; historyList.prepend(li);
+  marcarNumero(num); verificarGanador();
 }
-function startDraw(){if(drawInterval)return;drawBall();drawInterval=setInterval(drawBall,4000);btnStartDraw.disabled=true;btnStopDraw.disabled=false;}
-function stopDraw(){clearInterval(drawInterval);drawInterval=null;btnStartDraw.disabled=false;btnStopDraw.disabled=true;}
-btnStartDraw.onclick=startDraw;btnStopDraw.onclick=stopDraw;
+function startDraw(){ if(drawInterval) return; drawBall(); drawInterval=setInterval(drawBall,4000); btnStartDraw.disabled=true; btnStopDraw.disabled=false; }
+function stopDraw(){ clearInterval(drawInterval); drawInterval=null; btnStartDraw.disabled=false; btnStopDraw.disabled=true; }
+btnStartDraw.onclick=startDraw; btnStopDraw.onclick=stopDraw;
 
 btnRestart.onclick=()=>{
   if(confirm('¿Reiniciar partida?')){
-    stopDraw();remainingBalls=Array.from({length:75},(_,i)=>i+1);drawn.clear();currentBall.textContent='';historyList.innerHTML='';
-    contenedor.querySelectorAll('.cell.marked').forEach(c=>c.classList.remove('marked'));
-  }
-};
-
-function marcarNumero(n){document.querySelectorAll(`.cell[data-num="${n}"]`).forEach(c=>c.classList.add
+    stopDraw(); remainingBalls=Array.from({length:75},(_,i)=>
