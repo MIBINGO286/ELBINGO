@@ -1,16 +1,19 @@
-/* BINGO JOKER – lógicas de reserva y juego */
-const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxdrSJhX7HuTyfieoZNo5LY7DkC4Wpz2ltPqWCAGPJFQW6ntTftrtvlBIMV9Q9lvmbnow/exec';
-const API_LISTA  = 'https://opensheet.elk.sh/AKfycbxdrSJhX7HuTyfieoZNo5LY7DkC4Wpz2ltPqWCAGPJFQW6ntTftrtvlBIMV9Q9lvmbnow/Reservas';
-const BLOQUE = 50;
+/***********************  CONFIG ***********************/
+const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbxdrSJhX7HuTyfieoZNo5LY7DkC4Wpz2ltPqWCAGPJFQW6ntTftrtvlBIMV9Q9lvmbnow/exec';
+const SHEET_URL   = 'https://opensheet.elk.sh/1YeHvkb5ag9hdL1VZTtXyi3PKwio7RWQ5tr-WaDKd52g/RESERVAS'; // ← tu hoja
+const BLOQUE      = 50;
+const WHATS_APP   = '584266404042';
+const PANEL_PASS  = 'joker123';
 
+/*******************  VARIABLES GLOBALES *******************/
 let cartones = [];
 let vendidos = new Set();
 let pintados = 0;
-
-/* Sorteo */
+let drawn    = new Set();
 let remainingBalls = Array.from({length:75},(_,i)=>i+1);
 let drawInterval = null;
 
+/*******************  REFERENCIAS DOM *******************/
 const contenedor = document.getElementById('cartones-container');
 const loader     = document.getElementById('loader');
 const modal      = document.getElementById('modal');
@@ -60,10 +63,10 @@ function letterFor(n){
 /* ---------- RESERVAS ---------- */
 async function actualizarVendidos(){
   try {
-    const data = await fetch(API_LISTA).then(r=>r.json());
+    const data = await fetch(SHEET_URL).then(r=>r.json());
     vendidos = new Set(data.filter(r=>r.Estado==='RESERVADO').map(r=>String(r.ID)));
   } catch(e) {
-    console.warn('opensheet error', e);
+    console.warn('Error al obtener datos de la hoja', e);
   }
 }
 
