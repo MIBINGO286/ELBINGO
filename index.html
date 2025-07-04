@@ -13,47 +13,12 @@
     <button id="btn-toggle-panel" title="Panel de control">🎛️</button>
   </header>
 
-  <aside id="panel" class="hidden">
-    <h2>Panel de control</h2>
-    <div id="unlock-area">
-      <input id="password-input" type="password" placeholder="Contraseña" />
-      <button id="btn-unlock">Desbloquear</button>
-    </div>
-    <div id="panel-content" class="hidden">
-      <section>
-        <h3>Sorteo automático</h3>
-        <button id="btn-start-draw">Iniciar sorteo</button>
-        <button id="btn-stop-draw" disabled>Detener sorteo</button>
-        <p id="current-ball"></p>
-      </section>
-      <section>
-        <h3>Modalidad de juego</h3>
-        <label><input type="radio" name="mode" value="full" checked /> Cartón lleno</label>
-        <label><input type="radio" name="mode" value="vertical" /> Vertical</label>
-        <label><input type="radio" name="mode" value="horizontal" /> Horizontal</label>
-        <label><input type="radio" name="mode" value="diagonal" /> Diagonal</label>
-      </section>
-      <section>
-        <h3>Historial de bolas</h3>
-        <ul id="history"></ul>
-      </section>
-      <section>
-        <button id="btn-restart">Reiniciar partida</button>
-      </section>
-      <section>
-        <h3>Administrar cartones</h3>
-        <label>Cartón # <input id="input-unreserve" type="number" min="1" /></label>
-        <button id="btn-unreserve">Liberar cartón</button>
-      </section>
-    </div>
-  </aside>
-
   <main>
     <div id="cartones-container"></div>
     <div id="loader">Cargando más cartones…</div>
   </main>
 
-  <!--Modal reserva-->
+  <!-- Modal de Reserva -->
   <div id="modal" class="modal hidden">
     <div class="modal-content">
       <h2>Reservar cartón #<span id="carton-numero"></span></h2>
