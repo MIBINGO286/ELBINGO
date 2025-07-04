@@ -39,43 +39,52 @@ const searchInput    = document.getElementById('search-input');
 
 /*******************  INIT *******************/
 window.addEventListener('DOMContentLoaded', async () => {
-  try {
-    // Obtén los cartones desde la API de OpenSheet
-    const response = await fetch(SHEET_JSONP);
+  // Obtención de los datos desde la URL de OpenSheet
+  const response = await fetch(SHEET_JSONP);
+  const data = await response.json();
+
+  // Limpiar y parsear los datos de GRID
+  cartones = data.map(carton => {
+    let gridData = carton.GRID;
     
-    // Verifica si la respuesta es válida
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+    // Limpiar la cadena de GRID eliminando los saltos de línea y comillas escapadas
+    gridData = gridData.replace(/\\r\\n/g, '');  // Eliminar saltos de línea
+    gridData = gridData.replace(/\\"/g, '"');    // Eliminar las comillas escapadas
+
+    try {
+      // Intentar parsear el JSON limpio
+      gridData = JSON.parse(gridData);
+    } catch (error) {
+      console.error("Error al procesar el GRID:", error);
+      gridData = [];  // Si hay error, asignar un array vacío
     }
 
-    // Intenta parsear los datos como JSON
-    const text = await response.text();
-    console.log("Texto recibido:", text);
+    return {
+      id: carton.ID,
+      grid: gridData,
+      estado: carton.ESTADO || 'LIBRE'
+    };
+  });
 
-    // Verifica si el texto está vacío
-    if (!text) {
-      throw new Error("La respuesta está vacía.");
-    }
+  // Ordenar los cartones por ID
+  cartones.sort((a, b) => a.id - b.id);
+  pintarBloque();
+  observarScroll();
 
-    const data = JSON.parse(text);
-    console.log("Datos procesados:", data);
-
-    cartones = data.map(carton => {
-      return {
-        id: carton.ID,
-        grid: JSON.parse(carton.GRID),  // Aquí parseamos el GRID correctamente
-        estado: carton.ESTADO || 'LIBRE'
-      };
-    });
-
-    cartones.sort((a, b) => a.id - b.id);
-    pintarBloque();
-    observarScroll();
-
-  } catch (error) {
-    console.error("Error al obtener o procesar los datos: ", error);
-  }
+  // Cargar los cartones vendidos desde OpenSheet
+  jsonp(SHEET_JSONP, 'jsonpVendidos', data => {
+    vendidos = new Set(data.filter(r => String(r.Estado || r.ESTADO).toUpperCase() === 'RESERVADO').map(r => String(r.ID)));
+    refrescarVendidos();
+  });
 });
+
+/*******************  JSONP helper *******************/
+function jsonp(url, cb, cbfn) {
+  const s = document.createElement('script');
+  window[cb] = d => { cbfn(d); delete window[cb]; s.remove(); };
+  s.src = `${url}?callback=${cb}&_=${Date.now()}`;
+  document.body.appendChild(s);
+}
 
 /*******************  FUNCIONES PARA CARTONES *******************/
 function crearCarton({ id, grid, estado }) {
