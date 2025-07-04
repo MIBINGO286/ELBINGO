@@ -43,94 +43,77 @@ const searchInput    = document.getElementById('search-input');
 window.addEventListener('DOMContentLoaded', async () => {
   /* 1. Cargar cartones.json con manejo de error */
   try {
-    const r = await fetch('cartones.json', { cache: 'no-store' });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const r = await fetch('cartones.json', {cache:'no-store'});
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
     cartones = await r.json();
-    
-    // Verificar si los datos de los cartones tienen el formato correcto
-    if (!Array.isArray(cartones) || cartones.some(carton => !carton.id || !carton.grid)) {
-      throw new Error("Formato de cartones.json inválido");
-    }
-
-    cartones.sort((a, b) => a.id - b.id);
-    pintarCartones();
+    cartones.sort((a,b)=>a.id-b.id);
+    pintarBloque();
     observarScroll();
-  } catch (err) {
-    console.error('Error al cargar cartones.json', err);
+  } catch(err) {
+    console.error('No se pudo cargar cartones.json', err);
     loader.textContent = '⚠️ Error al cargar cartones';
     return; // abortar resto de inicialización
   }
 
   /* 2. Obtener lista de reservados vía JSONP */
-  jsonp(SHEET_JSONP, 'jsonpVendidos', data => {
-    vendidos = new Set(data.filter(r => String(r.Estado).toUpperCase() === 'RESERVADO').map(r => String(r.ID)));
-    refrescarCartonesVendidos();
+  jsonp(SHEET_JSONP,'jsonpVendidos',data=>{
+    try {
+      vendidos = new Set(data.filter(r=>String(r.Estado||r.ESTADO).toUpperCase()==='RESERVADO').map(r=>String(r.ID)));
+      refrescarVendidos();
+    }catch(e){
+      console.warn('opensheet error',e);
+    }
   });
 });
 
 /*******************  JSONP helper *******************/
-function jsonp(url, cb, cbfn) {
-  const s = document.createElement('script');
-  window[cb] = d => { cbfn(d); delete window[cb]; s.remove(); };
-  s.src = `${url}?callback=${cb}&_=${Date.now()}`;
+function jsonp(url,cb,cbfn){
+  const s=document.createElement('script');
+  window[cb]=d=>{cbfn(d);delete window[cb];s.remove();};
+  s.src=`${url}?callback=${cb}&_=${Date.now()}`;
   document.body.appendChild(s);
 }
 
 /*******************  FUNCIONES PARA CARTONES *******************/
-function crearCarton({ id, grid }) {
-  const a = document.createElement('article');
-  a.className = 'carton'; a.dataset.id = id;
-  const gridHtml = grid.flat().map(n => {
-    const marked = (n !== 'FREE' && drawn.has(n)) ? 'marked' : '';
-    return `<div class="cell ${marked}" data-num="${n}">${n === 'FREE' ? '★' : n}</div>`;
+function crearCarton({id,grid}){
+  const a=document.createElement('article');
+  a.className='carton'; a.dataset.id=id;
+  const gridHtml = grid.flat().map(n=>{
+    const marked = (n!=='FREE' && drawn.has(n)) ? 'marked':'';
+    return `<div class="cell ${marked}" data-num="${n}">${n==='FREE'?'★':n}</div>`;
   }).join('');
-  a.innerHTML = `<h3>#${id.toString().padStart(4, '0')}</h3><div class="grid">${gridHtml}</div>`;
-  if (vendidos.has(String(id))) a.classList.add('vendido');
-  else a.onclick = () => abrirModal(id);
+  a.innerHTML=`<h3>#${id.toString().padStart(4,'0')}</h3><div class="grid">${gridHtml}</div>`;
+  if(vendidos.has(String(id))) a.classList.add('vendido');
+  else a.onclick=()=>abrirModal(id);
   return a;
 }
-
-function pintarCartones() {
-  const frag = document.createDocumentFragment();
-  cartones.forEach(carton => {
-    const a = crearCarton(carton);
-    frag.appendChild(a);
-  });
-  contenedor.appendChild(frag);
-  if (pintados >= cartones.length) loader.style.display = 'none';
+function pintarBloque(){
+  const frag=document.createDocumentFragment();
+  for(let i=pintados;i<pintados+BLOQUE&&i<cartones.length;i++) frag.appendChild(crearCarton(cartones[i]));
+  pintados+=BLOQUE; contenedor.appendChild(frag);
+  if(pintados>=cartones.length) loader.style.display='none';
 }
-
-function observarScroll() {
-  const sent = document.createElement('div');
-  contenedor.appendChild(sent);
-  new IntersectionObserver(e => { if (e[0].isIntersecting) pintarCartones(); }).observe(sent);
+function observarScroll(){
+  const sent=document.createElement('div');contenedor.appendChild(sent);
+  new IntersectionObserver(e=>{if(e[0].isIntersecting) pintarBloque();}).observe(sent);
 }
-
-function refrescarCartonesVendidos() {
-  contenedor.querySelectorAll('.carton').forEach(c => {
-    if (vendidos.has(c.dataset.id)) c.classList.add('vendido');
+function refrescarVendidos(){
+  contenedor.querySelectorAll('.carton').forEach(c=>{
+    if(vendidos.has(c.dataset.id)) c.classList.add('vendido');
     else c.classList.remove('vendido');
   });
 }
 
 /*******************  RESERVAR CARTÓN (iframe oculto, sin CORS) *******************/
-function abrirModal(id) {
-  inputID.value = id;
-  spanNum.textContent = id;
-  modal.classList.remove('hidden');
-}
+function abrirModal(id){ inputID.value=id; spanNum.textContent=id; modal.classList.remove('hidden'); }
+function cerrarModal(){ modal.classList.add('hidden'); formRes.reset(); }
+window.cerrarModal=cerrarModal;
 
-function cerrarModal() {
-  modal.classList.add('hidden');
-  formRes.reset();
-}
-window.cerrarModal = cerrarModal;
-
-formRes.addEventListener('submit', e => {
+formRes.addEventListener('submit',e=>{
   e.preventDefault();
   const fd = new FormData(formRes);
   const id = fd.get('ID');
-  if (vendidos.has(id)) { alert('Ese cartón ya está reservado'); return; }
+  if(vendidos.has(id)) { alert('Ese cartón ya está reservado'); return; }
 
   // 1. Enviar a Apps Script sin CORS
   const ifr = document.createElement('iframe');
@@ -142,64 +125,42 @@ formRes.addEventListener('submit', e => {
   f.action = WEBAPP_URL;
   f.method = 'POST';
   f.target = 'hidden_iframe';
-  fd.forEach((v, k) => {
-    const inp = document.createElement('input');
-    inp.name = k; inp.value = v; f.appendChild(inp);
+  fd.forEach((v,k)=>{
+    const inp=document.createElement('input');
+    inp.name=k; inp.value=v; f.appendChild(inp);
   });
   document.body.appendChild(f);
   f.submit();
 
   // 2. Marcar en UI y WhatsApp
   vendidos.add(id);
-  refrescarCartonesVendidos();
+  refrescarVendidos();
   const msg = encodeURIComponent(`Hola, quiero comprar el cartón ${id} y ya estoy por realizar el pago.`);
-  window.open(`https://wa.me/${WHATS_APP}?text=${msg}`, '_blank');
+  window.open(`https://wa.me/${WHATS_APP}?text=${msg}`,'_blank');
   cerrarModal();
 });
 
 /*******************  PANEL CONTROL *******************/
-btnTogglePanel.onclick = () => panel.classList.toggle('hidden');
-
-btnUnlock.onclick = () => {
-  if (passwordInput.value === PANEL_PASS) {
-    panelContent.classList.remove('hidden');
-    passwordInput.value = '';
-  } else alert('Contraseña incorrecta');
+btnTogglePanel.onclick=()=>panel.classList.toggle('hidden');
+btnUnlock.onclick=()=>{
+  if(passwordInput.value===PANEL_PASS){ panelContent.classList.remove('hidden'); passwordInput.value=''; }
+  else alert('Contraseña incorrecta');
 };
 
 /*******************  SORTEO *******************/
-function letterFor(n) { return n <= 15 ? 'B' : n <= 30 ? 'I' : n <= 45 ? 'N' : n <= 60 ? 'G' : 'O'; }
-
-function drawBall() {
-  if (!remainingBalls.length) { stopDraw(); alert('¡Sin bolas!'); return; }
-  const idx = Math.floor(Math.random() * remainingBalls.length);
-  const num = remainingBalls.splice(idx, 1)[0];
-  drawn.add(num);
-  currentBall.textContent = `${letterFor(num)} - ${num}`;
-  const li = document.createElement('li');
-  li.textContent = `${letterFor(num)}${num}`;
-  historyList.prepend(li);
-  marcarNumero(num);
-  verificarGanador();
+function letterFor(n){return n<=15?'B':n<=30?'I':n<=45?'N':n<=60?'G':'O';}
+function drawBall(){
+  if(!remainingBalls.length){ stopDraw(); alert('¡Sin bolas!'); return; }
+  const idx=Math.floor(Math.random()*remainingBalls.length);
+  const num=remainingBalls.splice(idx,1)[0]; drawn.add(num);
+  currentBall.textContent=`${letterFor(num)} - ${num}`;
+  const li=document.createElement('li'); li.textContent=`${letterFor(num)}${num}`; historyList.prepend(li);
+  marcarNumero(num); verificarGanador();
 }
+function startDraw(){ if(drawInterval) return; drawBall(); drawInterval=setInterval(drawBall,4000); btnStartDraw.disabled=true; btnStopDraw.disabled=false; }
+function stopDraw(){ clearInterval(drawInterval); drawInterval=null; btnStartDraw.disabled=false; btnStopDraw.disabled=true; }
+btnStartDraw.onclick=startDraw; btnStopDraw.onclick=stopDraw;
 
-function startDraw() { if (drawInterval) return; drawBall(); drawInterval = setInterval(drawBall, 4000); btnStartDraw.disabled = true; btnStopDraw.disabled = false; }
-function stopDraw() { clearInterval(drawInterval); drawInterval = null; btnStartDraw.disabled = false; btnStopDraw.disabled = true; }
-btnStartDraw.onclick = startDraw;
-btnStopDraw.onclick = stopDraw;
-
-btnRestart.onclick = () => {
-  if (confirm('¿Reiniciar partida?')) {
-    stopDraw();
-    remainingBalls = Array.from({ length: 75 }, (_, i) => i + 1);
-    drawn.clear();
-    currentBall.textContent = '';
-    historyList.innerHTML = '';
-    contenedor.querySelectorAll('.cell.marked').forEach(c => c.classList.remove('marked'));
-  }
-};
-
-function marcarNumero(n) { document.querySelectorAll(`.cell[data-num="${n}"]`).forEach(c => c.classList.add('marked')); }
-function verificarGanador() {
-  // Aquí puedes agregar la lógica para verificar si un cartón ha ganado
-}
+btnRestart.onclick=()=>{
+  if(confirm('¿Reiniciar partida?')){
+    stopDraw(); remainingBalls=Array.from({length:75},(_,i)=>
