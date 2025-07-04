@@ -1,4 +1,4 @@
-// script.js – versión completa con panel, sorteo, detección de ganadores y CORS resuelto mediante iframe/JSONP
+// script.js – versión completa con panel, sorteo y bloqueo persistente
 
 /***********************  CONFIG ***********************/
 const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbxKH9xP-YZ6UXdTw9MtjeF9C19lMlXH0k-oMrbXiWqhrhoN0xJJPPpa6NOGFJo7x_5G/exec';
@@ -90,37 +90,43 @@ function refrescarVendidos(){
   });
 }
 
-/*******************  RESERVAR CARTÓN *******************/
+/*******************  RESERVAR CARTÓN (sin CORS, vía iframe) *******************/
 function abrirModal(id){ inputID.value=id; spanNum.textContent=id; modal.classList.remove('hidden'); }
 function cerrarModal(){ modal.classList.add('hidden'); formRes.reset(); }
 window.cerrarModal=cerrarModal;
 
-formRes.addEventListener('submit',async e=>{
+formRes.addEventListener('submit',e=>{
   e.preventDefault();
-  const fd=new FormData(formRes);
-  const id=fd.get('ID');
+  const fd = new FormData(formRes);
+  const id = fd.get('ID');
   if(vendidos.has(id)){ alert('Ese cartón ya está reservado'); return; }
 
-  try{
-    const res = await fetch(WEBAPP_URL,{
-      method:'POST',
-      mode:'cors',
-      headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:new URLSearchParams(fd).toString()
-    });
-    const txt = await res.text();
-    if(!res.ok || !/OK/i.test(txt)) throw new Error(txt);
+  // Crear iframe oculto para evitar CORS
+  const ifr=document.createElement('iframe');
+  ifr.name='hidden_iframe';
+  ifr.style.display='none';
+  document.body.appendChild(ifr);
 
-    vendidos.add(id);
-    refrescarVendidos();
-    // Abrir WhatsApp con mensaje
-    const msg = encodeURIComponent(`Hola, quiero comprar el cartón ${id} y ya estoy por realizar el pago.`);
-    window.open(`https://wa.me/${WHATS_APP}?text=${msg}`,'_blank');
-    cerrarModal();
-  }catch(err){
-    alert('Error al reservar. Intenta nuevamente.');
-    console.error(err);
-  }
+  const f=document.createElement('form');
+  f.action=WEBAPP_URL;
+  f.method='POST';
+  f.target='hidden_iframe';
+  fd.forEach((v,k)=>{
+    const inp=document.createElement('input');
+    inp.name=k; inp.value=v; f.appendChild(inp);
+  });
+  document.body.appendChild(f);
+  f.submit();
+
+  // Marcar inmediatamente como vendido
+  vendidos.add(id);
+  refrescarVendidos();
+
+  // Abrir WhatsApp con mensaje pre‑llenado
+  const msg = encodeURIComponent(`Hola, quiero comprar el cartón ${id} y ya estoy por realizar el pago.`);
+  window.open(`https://wa.me/${WHATS_APP}?text=${msg}`,'_blank');
+
+  cerrarModal();
 });
 
 /*******************  PANEL CONTROL *******************/
@@ -130,6 +136,7 @@ btnUnlock.onclick=()=>{
   else alert('Contraseña incorrecta');
 };
 
+/*******************  SORTEO *******************/
 function letterFor(n){return n<=15?'B':n<=30?'I':n<=45?'N':n<=60?'G':'O';}
 function drawBall(){
   if(!remainingBalls.length){stopDraw();alert('¡Sin bolas!');return;}
@@ -150,26 +157,4 @@ btnRestart.onclick=()=>{
   }
 };
 
-function marcarNumero(n){document.querySelectorAll(`.cell[data-num="${n}"]`).forEach(c=>c.classList.add('marked'));}
-function getMode(){return [...modeRadios].find(r=>r.checked)?.value||'full';}
-function cartonGanador(grid, mode){
-  const check=l=>l.every(n=>n==='FREE'||drawn.has(n));
-  const cols=grid[0].map((_,i)=>grid.map(r=>r[i]));
-  if(mode==='full')return grid.flat().every(n=>n==='FREE'||drawn.has(n));
-  if(mode==='horizontal')return grid.some(check);
-  if(mode==='vertical')return cols.some(check);
-  if(mode==='diagonal'){
-    const d1=[0,1,2,3,4].map(i=>grid[i][i]);
-    const d2=[0,1,2,3,4].map(i=>grid[i][4-i]);
-    return check(d1)||check(d2);
-  }
-  return false;
-}
-function verificarGanador(){
-  const m=getMode();
-  for(const {id,grid} of cartones){
-    if(!vendidos.has(String(id)))continue;
-    if(cartonGanador(grid,m)){stopDraw();alert(`¡Cartón ganador #${id}!`);
-      document.querySelector(`.carton[data-id="${id}"]`).scrollIntoView({behavior:'smooth',block:'center'});return;}
-  }
-}
+function marcarNumero(n){document.querySelectorAll(`.cell[data-num="${n}"]`).forEach(c=>c.classList.add
