@@ -1,5 +1,5 @@
 /*********************** CONFIG ***********************/
-const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbxdrSJhX7HuTyfieoZNo5LY7DkC4Wpz2ltPqWCAGPJFQW6ntTftrtvlBIMV9Q9lvmbnow/exec';
+const WEBAPP_URL  = 'https://script.google.com/macros/s/AKfycbxKH9xP-YZ6UXdTw9MtjeF9C19lMlXH0k-oMrbXiWqhrhoN0xJJPPpa6NOGFJo7x_5G/exec';
 const SHEET_URL   = 'https://opensheet.elk.sh/1YeHvkb5ag9hdL1VZTtXyi3PKwio7RWQ5tr-WaDKd52g/RESERVAS'; // ← tu hoja
 const BLOQUE      = 50; // Cantidad de cartones a cargar por bloque
 const WHATS_APP   = '584266404042'; // Número de WhatsApp (no usado en este script, pero mantenido)
